@@ -10,9 +10,9 @@ namespace clk.Resources
         /// When this messages has been shown, the application will
         /// exit and no further actions will be performed.
         /// </summary>
-        public static void Usage()
+        public static void usage()
         {
-            Console.WriteLine("CLI Kanban - usage options and examples:");
+            Console.WriteLine("CLI Kanban - Usage options and examples:");
             Console.WriteLine();
             Console.WriteLine("-h --help    This message");
             Console.WriteLine("-a --about   Version and program information");

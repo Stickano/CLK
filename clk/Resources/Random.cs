@@ -9,10 +9,10 @@ namespace clk.Resources
         /// ex: 0f8fad5b-d9cb-469f-a165-70867728950e
         /// </summary>
         /// <returns>String uniqueId</returns>
-        public static Guid guid()
+        public static string guid()
         {
             Guid g = Guid.NewGuid();
-            return g;
+            return g.ToString();
         }
     }
 }
