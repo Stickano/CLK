@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using clk.Controllers;
 using clk.Models;
 using clk.Resources;
@@ -8,19 +9,34 @@ namespace clk
 {
     internal class Program
     {
-        private static Dictionary<string, string> parameters = new Dictionary<string, string>();
-        
+        //private static Dictionary<string, string> parameters = new Dictionary<string, string>();
+        private static List<Argument> argList = new List<Argument>();
+        private static bool boardOverview;
+        private static int board;
+        private static int list;
+        private static int card;
+
         public static void Main(string[] args)
         {
             sortArgs(args);
             Json.isFiles();
 
-            if (parameters.ContainsKey("-h"))
-                About.usage();
-            if (parameters.ContainsKey("-b") && parameters["-b"].Equals(""))
-                getBoards();
-            if (parameters.ContainsKey("--new-board"))
-                createBoard();
+            var argGroups = argList.ToLookup(x => x.key, x => x.value);
+
+            // Loop through all the parameters (args),
+            // and perform the action associated with that parameter.
+            foreach (IGrouping<string, string> keyVal in argGroups)
+            {
+                if (keyVal.Key.Equals("-h"))
+                    About.usage();
+                if (keyVal.Key.Equals("-b") && boardOverview)
+                    getBoards();
+                if (keyVal.Key.Equals("--new-board"))
+                    createBoard(keyVal);
+                if (keyVal.Key.Equals("--new-list"))
+                    createList(keyVal);
+                
+            }
                 
 
         }
@@ -58,7 +74,21 @@ namespace clk
                 if (keyVal.Length > 1)
                     val = keyVal[1];
                 
-                parameters.Add(keyVal[0], val);
+                // Stupid workaround, bc I can get it working if the -b has a value with ToLookup IGrouping
+                if (keyVal[0].Equals("-b") && val.Equals(""))
+                    boardOverview = true;
+                
+                // Will set global variables, so we know which board, list or card we are working with.
+                if (keyVal[0].Equals("-b") && Validators.isInt(val))
+                    int.TryParse(val, out board);
+                if (keyVal[0].Equals("-l") && Validators.isInt(val))
+                    int.TryParse(val, out list);
+                if (keyVal[0].Equals("-c") && Validators.isInt(val))
+                    int.TryParse(val, out card);
+
+                Argument argument = new Argument {key = keyVal[0], value = val};
+                argList.Add(argument);
+                //parameters.Add(keyVal[0], val);
             }
         }
 
@@ -67,23 +97,36 @@ namespace clk
         /// It will invoke the OverviewController (boards).
         /// The controller will handle the heavy work. 
         /// </summary>
-        private static void createBoard()
-        {
-            // Return if no value is given
-            if (parameters["--new-board"].Equals(""))
-                return;
-            
+        private static void createBoard(IGrouping<string, string> keyVal)
+        {   
             OverviewController controller = new OverviewController();
-            controller.createBoard(parameters["--new-board"]);
+            foreach (var val in keyVal)
+            {
+                if (val.Equals(""))
+                    continue;
+                
+                controller.createBoard(val);                
+            }
         }
 
+        private static void createList(IGrouping<string, string> keyVal)
+        {
+            
+        }
+
+        /// <summary>
+        /// If -b with no value is incl. this will run.
+        /// It will invoke the OverviewController, get the boards,
+        /// and print em out for the user.
+        /// </summary>
         private static void getBoards()
         {
             OverviewController controller = new OverviewController();
             int br = 0;
-            foreach (Board board in controller.getBoards())
+            foreach (Board board in controller.boards)
             {
-                Console.WriteLine("["+ br++ +"]: " + board.name);
+                br++;
+                Console.WriteLine("["+ br +"]: " + board.name);
             }
         }
         

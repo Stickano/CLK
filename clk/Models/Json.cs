@@ -18,11 +18,11 @@ namespace clk.Models
         }
 
         /// <summary>
-        /// This will write a List<object> into one of
+        /// This will write a List of T into one of
         /// the available Json files.
         /// </summary>
         /// <param name="data"></param>
-        public void writeFile(List<object> data)
+        public void writeFile<T>(List<T> data)
         {
             using (StreamWriter writer = File.CreateText(jsonDir + file))
             {
@@ -33,18 +33,18 @@ namespace clk.Models
 
         /// <summary>
         /// This will read any of the available Json files
-        /// and return the content as a List<object>
+        /// and return the content as a List of T
         /// You will have to typecast the object into the
         /// correct model.
         /// </summary>
-        /// <returns>List<object> of the content from the Json file</returns>
-        public List<object> readFile()
+        /// <returns>List of the content from the Json file</returns>
+        public List<T> readFile<T>()
         {
-            List<object> result;
+            List<T> result;
             using (StreamReader read = new StreamReader(jsonDir + file))
             {
                 string json = read.ReadToEnd();
-                result = JsonConvert.DeserializeObject<List<object>>(json);
+                result = JsonConvert.DeserializeObject<List<T>>(json);
             }
 
             return result;

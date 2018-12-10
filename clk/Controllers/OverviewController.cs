@@ -1,56 +1,22 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using clk.Models;
 using clk.Resources;
-using Newtonsoft.Json;
 using Random = clk.Resources.Random;
 
 namespace clk.Controllers
 {
     public class OverviewController
     {
+        public List<Board> boards { get; }
         private string jsonFile = "boards.json";
-        private List<Board> boards;
         private Json json;
 
         public OverviewController()
         {
             boards = new List<Board>();
-            fetchBoards();
-        }
-
-        /// <summary>
-        /// This will be fetch all the stored boards,
-        /// from the Json file, and populate the boards List.
-        /// </summary>
-        private void fetchBoards()
-        {
             json = new Json(jsonFile);
-
-            if (json.readFile() == null)
-                return;
-
-            //List<Board> b = json.readFile().Cast<Board>().ToList();
-            List<object> fromJson = json.readFile();
-            List<Board> toBoards = fromJson.ConvertAll(x => (Board) x);
-            foreach (Board board in toBoards)
-            {
-                Console.WriteLine(board.id);
-            }
-            
-            /*foreach (Board board in json.readFile())
-            {
-                Console.WriteLine(board.ToString());
-                //IEnumerable<Board> a = board.ca
-                //Board b = new Board(a.id, a.name, a.created);
-                boards.Add(board);
-            }*/
-        }
-
-        public List<Board> getBoards()
-        {
-            return boards;
+            boards = json.readFile<Board>();
         }
 
         /// <summary>
@@ -68,7 +34,7 @@ namespace clk.Controllers
             boards.Add(board);
             
             Json json = new Json(jsonFile);
-            json.writeFile(boards.Cast<object>().ToList());
+            json.writeFile(boards);
         }
     }
 }

@@ -46,6 +46,7 @@
     <Compile Include="Controllers\CardController.cs" />
     <Compile Include="Controllers\ListController.cs" />
     <Compile Include="Controllers\OverviewController.cs" />
+    <Compile Include="Models\Argument.cs" />
     <Compile Include="Models\Board.cs" />
     <Compile Include="Models\Card.cs" />
     <Compile Include="Models\Json.cs" />
@@ -55,6 +56,7 @@
     <Compile Include="Resources\About.cs" />
     <Compile Include="Resources\Random.cs" />
     <Compile Include="Resources\Time.cs" />
+    <Compile Include="Resources\Validators.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
