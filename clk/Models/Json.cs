@@ -40,11 +40,12 @@ namespace clk.Models
         /// <returns>List of the content from the Json file</returns>
         public List<T> readFile<T>()
         {
-            List<T> result;
+            List<T> result = new List<T>();
             using (StreamReader read = new StreamReader(jsonDir + file))
             {
                 string json = read.ReadToEnd();
-                result = JsonConvert.DeserializeObject<List<T>>(json);
+                if (new FileInfo(jsonDir + file).Length != 0)
+                    result = JsonConvert.DeserializeObject<List<T>>(json);
             }
 
             return result;

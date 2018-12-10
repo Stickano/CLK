@@ -13,5 +13,10 @@ namespace clk.Models
             this.name = name;
             this.created = created;
         }
+
+        public override string ToString()
+        {
+            return $"{nameof(id)}: {id}, {nameof(name)}: {name}, {nameof(created)}: {created}";
+        }
     }
 }

@@ -12,9 +12,9 @@ namespace clk
         //private static Dictionary<string, string> parameters = new Dictionary<string, string>();
         private static List<Argument> argList = new List<Argument>();
         private static bool boardOverview;
-        private static int board;
-        private static int list;
-        private static int card;
+        private static int board = -1;
+        private static int list = -1;
+        private static int card = -1;
 
         public static void Main(string[] args)
         {
@@ -105,13 +105,38 @@ namespace clk
                 if (val.Equals(""))
                     continue;
                 
-                controller.createBoard(val);                
+                controller.createBoard(val);
+                Console.WriteLine("Created board: " + val);
             }
+
+            Console.WriteLine();
         }
 
+        /// <summary>
+        /// If --new-list parameter is incl. this is run.
+        /// It will make sure a board has been selected,
+        /// find the ID of that board and initialize a
+        /// ListController, which will handle the creation.
+        /// </summary>
+        /// <param name="keyVal"></param>
         private static void createList(IGrouping<string, string> keyVal)
         {
+            if (board < 1)
+                return;
             
+            OverviewController ovController = new OverviewController();
+            string boardId = IDs.getIdFromList(ovController.boards, board - 1);
+            ListController controller = new ListController(boardId);
+            foreach (var val in keyVal)
+            {
+                if (val.Equals(""))
+                    continue;
+                
+                controller.createList(val);
+                Console.WriteLine("Created list: " + val);
+            }
+
+            Console.WriteLine();
         }
 
         /// <summary>
@@ -123,11 +148,15 @@ namespace clk
         {
             OverviewController controller = new OverviewController();
             int br = 0;
+            
+            Console.WriteLine("Available boards:");
             foreach (Board board in controller.boards)
             {
                 br++;
                 Console.WriteLine("["+ br +"]: " + board.name);
             }
+
+            Console.WriteLine();
         }
         
     }
