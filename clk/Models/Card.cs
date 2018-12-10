@@ -4,15 +4,18 @@ namespace clk.Models
 {
     public class Card
     {
-        private string id;
-        public String headline { get; set; }
-        public String Description { get; set; }
+        public string id { get; }
+        public string name { get; }
+        public string created { get;}
+        public string listId { get; }
+        public string description { get; set; }
 
-        public Card(string id, string headline, string description)
+        public Card(string id, string name, string created, string listId)
         {
             this.id = id;
-            this.headline = headline;
-            Description = description;
+            this.name = name;
+            this.created = created;
+            this.listId = listId;
         }
     }
 }

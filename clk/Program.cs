@@ -35,7 +35,9 @@ namespace clk
                     createBoard(keyVal);
                 if (keyVal.Key.Equals("--new-list"))
                     createList(keyVal);
-                
+                if (keyVal.Key.Equals("--new-card"))
+                    createCard(keyVal);
+                //if (keyVal.Key.Equals(""))
             }
                 
 
@@ -93,10 +95,31 @@ namespace clk
         }
 
         /// <summary>
+        /// If -b with no value is incl. this will run.
+        /// It will invoke the OverviewController, get the boards,
+        /// and print em out for the user.
+        /// </summary>
+        private static void getBoards()
+        {
+            OverviewController controller = new OverviewController();
+            int br = 0;
+            
+            Console.WriteLine("Available boards:");
+            foreach (Board board in controller.boards)
+            {
+                br++;
+                Console.WriteLine("["+ br +"]: " + board.name);
+            }
+
+            Console.WriteLine();
+        }
+
+        /// <summary>
         /// If --new-board parameter is incl. this is run.
         /// It will invoke the OverviewController (boards).
         /// The controller will handle the heavy work. 
         /// </summary>
+        /// <param name="keyVal">The KeyVal args from the ToLookup</param>
         private static void createBoard(IGrouping<string, string> keyVal)
         {   
             OverviewController controller = new OverviewController();
@@ -118,15 +141,18 @@ namespace clk
         /// find the ID of that board and initialize a
         /// ListController, which will handle the creation.
         /// </summary>
-        /// <param name="keyVal"></param>
+        /// <param name="keyVal">The KeyVal args from the ToLookup</param>
         private static void createList(IGrouping<string, string> keyVal)
         {
             if (board < 1)
                 return;
-            
+
+            board--;
             OverviewController ovController = new OverviewController();
-            string boardId = IDs.getIdFromList(ovController.boards, board - 1);
+            string boardId = ObjectValues.getValueFromList(ovController.boards, board, "id");
+            string boardName = ObjectValues.getValueFromList(ovController.boards, board, "name");
             ListController controller = new ListController(boardId);
+            
             foreach (var val in keyVal)
             {
                 if (val.Equals(""))
@@ -135,29 +161,47 @@ namespace clk
                 controller.createList(val);
                 Console.WriteLine("Created list: " + val);
             }
-
+            
+            Console.WriteLine("In board    : " + boardName);
             Console.WriteLine();
         }
 
         /// <summary>
-        /// If -b with no value is incl. this will run.
-        /// It will invoke the OverviewController, get the boards,
-        /// and print em out for the user.
+        /// If --new-card is incl. this is run.
+        /// It will make sure that the board and list is selected,
+        /// and let the ListController handle the creaton.
         /// </summary>
-        private static void getBoards()
+        /// <param name="keyVal">The KeyVal args from the ToLookup</param>
+        private static void createCard(IGrouping<string, string> keyVal)
         {
-            OverviewController controller = new OverviewController();
-            int br = 0;
-            
-            Console.WriteLine("Available boards:");
-            foreach (Board board in controller.boards)
-            {
-                br++;
-                Console.WriteLine("["+ br +"]: " + board.name);
-            }
+            if (board < 1 || list < 1)
+                return;
 
+            board--;
+            list--;
+            
+            OverviewController ovController = new OverviewController();
+            string boardId = ObjectValues.getValueFromList(ovController.boards, board, "id");
+            string boardName = ObjectValues.getValueFromList(ovController.boards, board, "name");
+            
+            ListController liController = new ListController(boardId);
+            string listId = ObjectValues.getValueFromList(liController.lists, list, "id");
+            string listName = ObjectValues.getValueFromList(liController.lists, list, "name");
+            
+            CardController controller = new CardController(boardId, listId);
+            Console.WriteLine(keyVal.Count());
+            foreach (var val in keyVal)
+            {
+                if (val.Equals(""))
+                    continue;
+                
+                controller.createCard(val);
+                Console.WriteLine("Created card: " + val);
+            }
+            
+            Console.WriteLine("In list     : " + listName);
+            Console.WriteLine("In board    : " + boardName);
             Console.WriteLine();
         }
-        
     }
 }

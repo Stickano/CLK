@@ -14,7 +14,6 @@ namespace clk.Controllers
 
         public OverviewController()
         {
-            boards = new List<Board>();
             json = new Json(jsonFile);
             boards = json.readFile<Board>();
         }

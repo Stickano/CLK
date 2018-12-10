@@ -54,7 +54,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\About.cs" />
-    <Compile Include="Resources\IDs.cs" />
+    <Compile Include="Resources\ObjectValues.cs" />
     <Compile Include="Resources\Random.cs" />
     <Compile Include="Resources\Time.cs" />
     <Compile Include="Resources\Validators.cs" />

@@ -15,7 +15,6 @@ namespace clk.Controllers
         public ListController(string boardId)
         {
             this.boardId = boardId;
-            lists = new List<List>();
             json = new Json(jsonFile);
             lists = json.readFile<List>();
         }
