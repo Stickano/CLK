@@ -8,15 +8,31 @@ namespace clk.Controllers
     public class CardController
     {
         public string listId { get; }
+        
         public List<Card> cards { get; }
-        private string jsonFile = "cards.json";
-        private Json json;
+        public List<Comment> comments { get; }
+        
+        private string cardJsonFile = "cards.json";
+        private string commentJsonFile = "comments.json";
+        
+        private Json cardJson;
+        private Json commentJson;
 
+        /// <summary>
+        /// Constructor.
+        /// Will set a Json object for both comments and cards.
+        /// (comments are related to cards, so seemed logical at the time)
+        /// </summary>
+        /// <param name="listId">The ID of the list, to fetch/save card(s) from/to.</param>
         public CardController(string listId)
         {
             this.listId = listId;
-            json = new Json(jsonFile);
-            cards = json.readFile<Card>();
+            
+            cardJson = new Json(cardJsonFile);
+            cards = cardJson.readFile<Card>();
+            
+            commentJson = new Json(commentJsonFile);
+            comments = commentJson.readFile<Comment>();
         }
 
         /// <summary>
@@ -33,8 +49,7 @@ namespace clk.Controllers
                 card.description = description;
             
             cards.Add(card);
-            
-            json.writeFile(cards);
+            cardJson.writeFile(cards);
         }
 
         /// <summary>
@@ -45,7 +60,18 @@ namespace clk.Controllers
         public void createDescription(string description, string cardId)
         {
             cards.Find(x => x.id == cardId).description = description;
-            json.writeFile(cards);
+            cardJson.writeFile(cards);
+        }
+
+        /// <summary>
+        /// This will create a comment for a card.
+        /// </summary>
+        /// <param name="comment">The comment text</param>
+        /// <param name="cardId">The ID for the card to comment on</param>
+        public void createComment(string comment, string cardId)
+        {
+            comments.Add(new Comment{cardId = cardId, comment = comment});
+            commentJson.writeFile(comments);
         }
 
         /// <summary>
@@ -59,6 +85,16 @@ namespace clk.Controllers
             var cardCriteria = from l in cards where l.listId == listId select l;
             List<Card> sortedLists = cardCriteria.ToList();
             return sortedLists;
+        }
+
+        /// <summary>
+        /// This will return all the comments associated with a card.
+        /// </summary>
+        /// <param name="cardId">The card ID to collect comments from</param>
+        /// <returns>List of Comment</returns>
+        public List<Comment> getComments(string cardId)
+        {
+            return comments.FindAll(x => x.cardId == cardId).ToList();
         }
     }
 }

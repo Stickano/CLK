@@ -61,6 +61,9 @@ namespace clk
                 
                 if (keyVal.Key.Equals("--description") && !argController.newCard)
                     createDescription(keyVal);
+                
+                if (keyVal.Key.Equals("--comment") && !argController.newCard)
+                    createComment(keyVal);
                
             }
         }
@@ -178,9 +181,19 @@ namespace clk
             Console.WriteLine("List : " + listName);
             Console.WriteLine();
             Console.WriteLine("Card: " + c.name);
-            Console.WriteLine(EyeCandy.indent(5) + c.description);
+            Console.WriteLine(EyeCandy.indent(6) + c.description);
             
             // TODO: Here'll be checklists too!
+
+            int br = 0;
+            Console.WriteLine();
+            Console.WriteLine("Comment(s):");
+            foreach (Comment comment in caController.getComments(cardId))
+            {
+                br++;
+                Console.WriteLine("  ["+ br +"]: " + comment.comment);
+                Console.WriteLine();
+            }
         }
 
         /// <summary>
@@ -304,7 +317,7 @@ namespace clk
                 return;
 
             // If description is empty, return
-            if (keyVal.FirstOrDefault().Equals(""))
+            if (keyVal.FirstOrDefault().Equals("")) //TODO: This is kinda sketchy.. Fix so you can loop through perhaps.
                 return;
             
             
@@ -316,14 +329,48 @@ namespace clk
             caController.createDescription(keyVal.FirstOrDefault(), cardId);
 
             // Print out some info nice for this selection
-            Console.WriteLine("Created description.");
+            Console.WriteLine("Created description: " + keyVal.FirstOrDefault());
             Console.WriteLine("In card : " + cardName);
             Console.WriteLine("In list : " + listName);
             Console.WriteLine("In board: " + boardName);
             Console.WriteLine();
 
             getCard();
+        }
 
+        /// <summary>
+        /// If --comment is incl. this will run.
+        /// It will make sure board, list and card is set,
+        /// initialize controllers for all three (board, list & card),
+        /// and create each of the comments provided.
+        /// </summary>
+        /// <param name="keyVal">The arguments in ToLookup (argument controller method)</param>
+        private static void createComment(IGrouping<string, string> keyVal)
+        {
+            // Make sure board, list and card is selected
+            if (argController.board < 0 || argController.list < 0 || argController.card < 0)
+                return;
+            
+            // Initialize required controllers and set some valuable variables
+            iniOvController();
+            iniLiController(boardId);
+            iniCaController(listId);
+
+            // Loop through and create each comment
+            foreach (var val in keyVal)
+            {
+                caController.createComment(val, cardId);
+                Console.WriteLine("Created comment: " + val);
+            }
+            
+            // Print some good info for this selection
+            Console.WriteLine("In card     : " + cardName);
+            Console.WriteLine("In list     : " + listName);
+            Console.WriteLine("In board    : " + boardName);
+            Console.WriteLine();
+
+            getCard();
+            //getCards();
         }
 
         /// <summary>

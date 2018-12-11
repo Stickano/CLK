@@ -70,6 +70,8 @@ namespace clk.Models
                 File.Create("Json/cards.json").Close();
             if (!File.Exists("Json/lists.json"))
                 File.Create("Json/lists.json").Close();
+            if (!File.Exists("Json/comments.json"))
+                File.Create("Json/comments.json").Close();
         }
     }
 }
