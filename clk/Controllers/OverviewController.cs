@@ -32,7 +32,6 @@ namespace clk.Controllers
             Board board = new Board(id, boardName, created);
             boards.Add(board);
             
-            Json json = new Json(jsonFile);
             json.writeFile(boards);
         }
     }

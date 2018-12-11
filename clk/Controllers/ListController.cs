@@ -31,7 +31,6 @@ namespace clk.Controllers
             List list = new List(id, listName, boardId, created);
             lists.Add(list);
             
-            Json json = new Json(jsonFile);
             json.writeFile(lists);
         }
 
