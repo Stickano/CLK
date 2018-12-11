@@ -23,12 +23,15 @@ namespace clk.Controllers
         /// Create a new card.
         /// </summary>
         /// <param name="cardName">The name of the new card</param>
-        public void createCard(string cardName)
+        public void createCard(string cardName, string description="")
         {
             string created = Time.timestamp();
             string id = Random.guid();
 
             Card card = new Card(id, cardName, created, listId);
+            if (!description.Equals(""))
+                card.description = description;
+            
             cards.Add(card);
             
             json.writeFile(cards);
