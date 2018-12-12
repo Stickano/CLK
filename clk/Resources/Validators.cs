@@ -31,7 +31,7 @@ namespace clk.Resources
         /// <returns>True/False if position is available</returns>
         public static bool inList<T>(List<T> list, int position)
         {
-            if (list[position] != null)
+            if (position >= 0 && position < list.Count)
                 return true;
             return false;
         }

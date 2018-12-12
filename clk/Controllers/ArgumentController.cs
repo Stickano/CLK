@@ -11,6 +11,7 @@ namespace clk.Controllers
         private int _board;
         private int _list;
         private int _card;
+        private int _check;
 
         public int board
         {
@@ -27,11 +28,18 @@ namespace clk.Controllers
             get { return _card; }
             set { _card = value; }
         }
+        public int check
+        {
+            get { return _check; }
+            set { _check = value; }
+        }
 
         public bool boardOverview { get; set; }
         public bool newCard { get; set; }
         public bool newDescription { get; set; }
         public bool newComment { get; set; }
+        public bool newCheck { get; set; }
+        public bool newPoint { get; set; }
 
         public ArgumentController(string[] args)
         {
@@ -39,6 +47,7 @@ namespace clk.Controllers
             board = -1;
             list = -1;
             card = -1;
+            check = -1;
             
             sortArgs(args);
         }
@@ -79,6 +88,8 @@ namespace clk.Controllers
                     keyVal[0] = "-l";
                 if (keyVal[0].Equals("--card"))
                     keyVal[0] = "-c";
+                if (keyVal[0].Equals("--check"))
+                    keyVal[0] = "-p";
                 
                 // Make sure there always is an value (empty if nothing else),
                 // so we don't run into nullexceptionref.
@@ -102,6 +113,10 @@ namespace clk.Controllers
                     newDescription = true;
                 if (keyVal[0].Equals("--comment"))
                     newComment = true;
+                if (keyVal[0].Equals("--new-check"))
+                    newCheck = true;
+                if (keyVal[0].Equals("--new-point"))
+                    newPoint = true;
                 
                 // Will set global variables, so we know which board, list or card we are working with.
                 if (keyVal[0].Equals("-b") && Validators.isInt(val))
@@ -120,6 +135,12 @@ namespace clk.Controllers
                 {
                     int.TryParse(val, out _card);
                     _card--;
+                }
+                
+                if (keyVal[0].Equals("-p") && Validators.isInt(val))
+                {
+                    int.TryParse(val, out _check);
+                    _check--;
                 }
 
                 Argument argument = new Argument {key = keyVal[0], value = val};

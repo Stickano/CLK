@@ -11,7 +11,6 @@ namespace clk
     internal class Program
     {
         private static ArgumentController argController;
-
         private static OverviewController ovController;
         private static ListController liController;
         private static CardController caController;
@@ -22,6 +21,10 @@ namespace clk
         private static string listName;
         private static string cardId;
         private static string cardName;
+
+        private static bool isBoard;
+        private static bool isList;
+        private static bool isCard;
 
         public static void Main(string[] args)
         {
@@ -38,16 +41,24 @@ namespace clk
                 if (keyVal.Key.Equals("-h"))
                     About.usage();
                  
-                if (keyVal.Key.Equals("-b") && argController.boardOverview)
+                if (keyVal.Key.Equals("-b") 
+                    && argController.boardOverview)
                     getBoards();
                 
-                if (keyVal.Key.Equals("-b") && argController.list < 0)
+                if (keyVal.Key.Equals("-b") 
+                    && argController.list < 0)
                     getLists();
                 
-                if (keyVal.Key.Equals("-l") && argController.card < 0 && !argController.newCard)
+                if (keyVal.Key.Equals("-l") 
+                    && argController.card < 0 
+                    && !argController.newCard)
                     getCards();
                 
-                if (keyVal.Key.Equals("-c") && !argController.newComment && !argController.newDescription)
+                if (keyVal.Key.Equals("-c") 
+                    && !argController.newComment 
+                    && !argController.newDescription
+                    && !argController.newCheck
+                    && !argController.newPoint)
                     getCard();
                 
                 if (keyVal.Key.Equals("--new-board"))
@@ -59,18 +70,25 @@ namespace clk
                 if (keyVal.Key.Equals("--new-card"))
                     createCard(keyVal);
                 
-                if (keyVal.Key.Equals("--description") && !argController.newCard)
+                if (keyVal.Key.Equals("--new-check"))
+                    createChecklist(keyVal);
+                
+                if (keyVal.Key.Equals("--new-point") 
+                    && !argController.newCheck)
+                    createChecklistPoint(keyVal);
+                
+                if (keyVal.Key.Equals("--description") 
+                    && !argController.newCard)
                     createDescription(keyVal);
                 
-                if (keyVal.Key.Equals("--comment") && !argController.newCard)
+                if (keyVal.Key.Equals("--comment") 
+                    && !argController.newCard)
                     createComment(keyVal);
-                
-                if (keyVal.Key.Equals("--check"))
-                    
-               
             }
         }
-        
+
+        #region Get methods for Boards, Lists, Cards and Card
+
         /// <summary>
         /// If -b with no value is incl. this will run.
         /// It will invoke the OverviewController, get the boards,
@@ -99,16 +117,12 @@ namespace clk
         /// </summary>
         private static void getLists()
         {
-            // Make sure board is selected
-            if (argController.board < 0)
-                return;
-
             // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
-            if (!Validators.inList(ovController.boards, argController.board))
-                return;
-            
             iniLiController(boardId);
+            
+            if (!isBoard)
+                return;
             
             int br = 0;
 
@@ -133,20 +147,13 @@ namespace clk
         /// </summary>
         private static void getCards()
         {
-            // Make sure board and list is selected
-            if (argController.board < 0 || argController.list < 0)
-                return;
-
             // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
-            if (!Validators.inList(ovController.boards, argController.board))
-                return;
-            
             iniLiController(boardId);
-            if (!Validators.inList(liController.lists, argController.list))
-                return;
-            
             iniCaController(listId);
+
+            if (!isList)
+                return;
             
             int br = 0;
             
@@ -160,7 +167,7 @@ namespace clk
             {
                 br++;
                 string cardCount = "  [" + br + "]: ";
-                int cardCountLen = cardCount.Length + 1;
+                int cardCountLen = cardCount.Length;
                 Console.WriteLine(cardCount + card.name);
                 if(!card.description.Equals(""))
                     Console.WriteLine(EyeCandy.indent(cardCountLen) + card.description);
@@ -177,21 +184,12 @@ namespace clk
         /// </summary>
         private static void getCard()
         {
-            // Make sure board, list and card is selected
-            if (argController.board < 0 || argController.list < 0 || argController.card < 0)
-                return;
-            
             // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
-            if (!Validators.inList(ovController.boards, argController.board))
-                return;
-            
             iniLiController(boardId);
-            if (!Validators.inList(liController.lists, argController.list))
-                return;
-            
             iniCaController(listId);
-            if (!Validators.inList(caController.cards, argController.card))
+            
+            if (!isCard)
                 return;
             
             Card c = caController.getCards().Find(x => x.id == cardId);
@@ -202,8 +200,27 @@ namespace clk
             Console.WriteLine();
             Console.WriteLine("Card: " + c.name);
             Console.WriteLine(EyeCandy.indent(6) + c.description);
-            
-            // TODO: Here'll be checklists too!
+
+            int chBr = 0;
+            Console.WriteLine();
+            Console.WriteLine("Checklist(s):");
+            foreach (Checklist checklist in caController.getChecklists(cardId))
+            {
+                chBr++;
+                string outCount = "  [" + chBr + "]: ";
+                int outCountLen = outCount.Length;
+                Console.WriteLine(outCount + checklist.name);
+
+                int pBr = 0;
+                foreach (ChecklistPoint point in caController.getChecklistPoints(checklist.id))
+                {
+                    pBr++;
+                    string outCountP = "[" + pBr + "]: ";
+                    Console.WriteLine(EyeCandy.indent(outCountLen) + outCountP + point.name);
+                }
+
+                Console.WriteLine();
+            }
 
             int br = 0;
             Console.WriteLine();
@@ -213,11 +230,16 @@ namespace clk
                 br++;
                 string outCount = "  [" + br + "]: ";
                 int outCountLen = outCount.Length;
-                Console.WriteLine(outCount + "[" + comment.created + "]");
+                Console.WriteLine(outCount + "(" + comment.created + ")");
                 Console.WriteLine(EyeCandy.indent(outCountLen) + comment.comment);
                 Console.WriteLine();
             }
         }
+        
+
+        #endregion
+
+        #region Create methods for Boards, Lists, Cards, Comments, Descriptions, Checklists & points
 
         /// <summary>
         /// If --new-board parameter is incl. this is run.
@@ -276,16 +298,14 @@ namespace clk
         /// <param name="keyVal">The KeyVal args from the ToLookup</param>
         private static void createList(IGrouping<string, string> keyVal)
         {
-            // Check that board is set
-            if (argController.board < 0)
-                return;
-
             // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
-            if (!Validators.inList(ovController.boards, argController.board))
+            iniLiController(boardId);
+
+            if (!isBoard)
                 return;
             
-            iniLiController(boardId);
+            // TODO: Create all cards too
             
             // Loop through each of the --new-list and create lists accordingly
             foreach (var val in keyVal)
@@ -312,22 +332,13 @@ namespace clk
         /// <param name="keyVal">The KeyVal args from the ToLookup</param>
         private static void createCard(IGrouping<string, string> keyVal)
         {
-            // Check that board and list is set
-            if (argController.board < 0 || argController.list < 0)
-                return;
-            
             // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
-            if (!Validators.inList(ovController.boards, argController.board))
-                return;
-            
             iniLiController(boardId);
-            
-            // Make sure the input is actual available in our list
-            if (!Validators.inList(liController.lists, argController.list))
-                return;
-            
             iniCaController(listId);
+
+            if (!isList)
+                return;
             
             // This will handle if you provide a --description along with a new card.
             string description = argController.getKeyVal()["--description"].First();
@@ -383,26 +394,16 @@ namespace clk
         /// <param name="keyVal">The KeyVal args from ToLookup</param>
         private static void createDescription(IGrouping<string, string> keyVal)
         {
-            // Make sure board, list and card is selected
-            if (argController.board < 0 || argController.list < 0 || argController.card < 0)
-                return;
-
             // If description is empty, return
             if (keyVal.FirstOrDefault().Equals("")) //TODO: This is kinda sketchy.. Fix so you can loop through perhaps.
                 return;
             
-            
             // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
-            if (!Validators.inList(ovController.boards, argController.board))
-                return;
-            
             iniLiController(boardId);
-            if (!Validators.inList(liController.lists, argController.list))
-                return;
-            
             iniCaController(listId);
-            if (!Validators.inList(caController.cards, argController.card))
+            
+            if (!isCard)
                 return;
             
             caController.createDescription(keyVal.FirstOrDefault(), cardId);
@@ -426,26 +427,20 @@ namespace clk
         /// <param name="keyVal">The arguments in ToLookup (argument controller method)</param>
         private static void createComment(IGrouping<string, string> keyVal)
         {
-            // Make sure board, list and card is selected
-            if (argController.board < 0 || argController.list < 0 || argController.card < 0)
-                return;
-            
             // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
-            if (!Validators.inList(ovController.boards, argController.board))
-                return;
-            
             iniLiController(boardId);
-            if (!Validators.inList(liController.lists, argController.list))
-                return;
-            
             iniCaController(listId);
-            if (!Validators.inList(caController.cards, argController.card))
+
+            if (!isCard)
                 return;
             
             // Loop through and create each comment
             foreach (var val in keyVal)
             {
+                if (val.Equals(""))
+                    continue;
+                
                 caController.createComment(val, cardId);
                 Console.WriteLine("Created comment: " + val);
             }
@@ -459,28 +454,102 @@ namespace clk
             getCard();
         }
 
+        /// <summary>
+        /// If --new-check is incl. this will run.
+        /// It will create a checklist for a card,
+        /// if satisfied with the user inputs of course.
+        /// </summary>
+        /// <param name="keyVal">The ToLookup for the ArgumentController (args)</param>
         private static void createChecklist(IGrouping<string, string> keyVal)
         {
-            // Make sure board, list and card is selected
-            if (argController.board < 0 || argController.list < 0 || argController.card < 0)
-                return;
-            
             // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
-            if (!Validators.inList(ovController.boards, argController.board))
-                return;
-            
             iniLiController(boardId);
-            if (!Validators.inList(liController.lists, argController.list))
-                return;
-            
             iniCaController(listId);
-            if (!Validators.inList(caController.cards, argController.card))
+
+            if (!isCard)
                 return;
             
+            // If --checkp (points) is included as parameter, create those for the checklist too.
+            List<string> points = new List<string>();
+            foreach (var arg in argController.getKeyVal()["--new-point"])
+            {
+                if (arg.Equals(""))
+                    continue;
+
+                points.Add(arg);
+            }
+
+            // Loop through each of the --check and --checkp, and create accordingly
+            string newChecklistId;
+            foreach (var val in keyVal)
+            {
+                if (val.Equals(""))
+                    continue;
+                
+                newChecklistId = caController.createChecklist(val, cardId);
+                Console.WriteLine("Created checklist: " + val);
+
+                foreach (string point in points)
+                {
+                    caController.createChecklistPoint(point, newChecklistId);
+                    Console.WriteLine("Added point      : " + point);
+                }
+            }
             
-            
+            // Print some good info for this selection
+            Console.WriteLine("In card          : " + cardName);
+            Console.WriteLine("In list          : " + listName);
+            Console.WriteLine("In board         : " + boardName);
+            Console.WriteLine();
+
+            getCard();
         }
+
+        /// <summary>
+        /// If --new-point is incl. this will run.
+        /// It will create a checklist point,
+        /// if satisfied with the input parameters.
+        /// </summary>
+        /// <param name="keyVal"></param>
+        private static void createChecklistPoint(IGrouping<string, string> keyVal)
+        {
+            // Initialize controllers and validate that the user-inputs are available in their respectful lists
+            iniOvController();
+            iniLiController(boardId);
+            iniCaController(listId);
+
+            if (!isCard)
+                return;
+
+            if (!Validators.inList(caController.getChecklists(cardId), argController.check))
+                return;
+            
+            string checklistId = ObjectValues.getValueFromList(caController.getChecklists(cardId), argController.check, "id");
+            string checklistName = caController.getChecklists(cardId)
+                .Find(x => x.id == checklistId)
+                .name;
+
+            foreach (string val in keyVal)
+            {
+                caController.createChecklistPoint(val, checklistId);
+                Console.WriteLine("Created checklist point: " + val);
+            }
+
+            // Print some good info for this selection
+            Console.WriteLine("In checklist           : " + checklistName);
+            Console.WriteLine("In card                : " + cardName);
+            Console.WriteLine("In list                : " + listName);
+            Console.WriteLine("In board               : " + boardName);
+            Console.WriteLine();
+
+            getCard();
+        }
+        
+
+        #endregion
+        
+        #region Init methods for each BoardController, ListController & CardController
 
         /// <summary>
         /// Will initialize a OverviewController,
@@ -490,8 +559,9 @@ namespace clk
         private static void iniOvController()
         {
             ovController = new OverviewController();
-            if (argController.board >= 0)
+            if (argController.board >= 0 && Validators.inList(ovController.boards, argController.board))
             {
+                isBoard = true;
                 boardId = ObjectValues.getValueFromList(ovController.boards, argController.board, "id");
                 boardName = ObjectValues.getValueFromList(ovController.boards, argController.board, "name");    
             }
@@ -506,8 +576,9 @@ namespace clk
         private static void iniLiController(string boardId)
         {
             liController = new ListController(boardId);
-            if (argController.list >= 0)
+            if (argController.list >= 0 && Validators.inList(liController.getLists(), argController.list))
             {
+                isList = true;
                 listId = ObjectValues.getValueFromList(liController.getLists(), argController.list, "id");
                 listName = ObjectValues.getValueFromList(liController.getLists(), argController.list, "name");   
             }
@@ -522,11 +593,15 @@ namespace clk
         private static void iniCaController(string listId)
         {
             caController = new CardController(listId);
-            if (argController.card >= 0)
+            if (argController.card >= 0 && Validators.inList(caController.getCards(), argController.card))
             {
+                isCard = true;
                 cardId = ObjectValues.getValueFromList(caController.getCards(), argController.card, "id");
                 cardName = ObjectValues.getValueFromList(caController.getCards(), argController.card, "name");    
             }
         }
+        
+        #endregion
+        
     }
 }
