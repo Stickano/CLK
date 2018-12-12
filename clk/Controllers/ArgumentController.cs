@@ -41,6 +41,8 @@ namespace clk.Controllers
         public bool newCheck { get; set; }
         public bool newPoint { get; set; }
 
+        public bool easter { get; set; }
+
         public ArgumentController(string[] args)
         {
             argList = new List<Argument>();
@@ -90,6 +92,10 @@ namespace clk.Controllers
                     keyVal[0] = "-c";
                 if (keyVal[0].Equals("--check"))
                     keyVal[0] = "-p";
+
+                // Activate easter egg
+                if (keyVal[0].Equals("-3d"))
+                    easter = true;
                 
                 // Make sure there always is an value (empty if nothing else),
                 // so we don't run into nullexceptionref.

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Management.Instrumentation;
+using System.Security.Cryptography.X509Certificates;
 using clk.Controllers;
 using clk.Models;
 using clk.Resources;
@@ -94,10 +94,18 @@ namespace clk
         /// It will invoke the OverviewController, get the boards,
         /// and print em out for the user.
         /// </summary>
-        private static void getBoards()
+        private static void getBoards(bool logo=true)
         {
+            // Controller that holds boards
             iniOvController();
             
+            // Print logo
+            if (logo && argController.easter)
+                Ascii.clkEaster();
+            else if (logo)
+                Ascii.clk();
+
+            // Loop through all boards
             int br = 0;
             Console.WriteLine("Available boards:");
             foreach (Board board in ovController.boards)
@@ -115,7 +123,7 @@ namespace clk
         /// The controller is making sure a relevant list of list, for the board,
         /// is returned.
         /// </summary>
-        private static void getLists()
+        private static void getLists(bool logo=true)
         {
             // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
@@ -124,12 +132,14 @@ namespace clk
             if (!isBoard)
                 return;
             
-            int br = 0;
+            if (logo)
+                Ascii.clkBoard();
 
             // Print out the board information (lists)
-            Console.WriteLine("Board: " + boardName);
-            Console.WriteLine();
+            commentDestination(boardName);
             Console.WriteLine("Available lists:");
+            
+            int br = 0;
             foreach (List list in liController.getLists())
             {
                 br++;
@@ -145,7 +155,7 @@ namespace clk
         /// The controller is making sure a relevant list of cards, for the list,
         /// is returned.
         /// </summary>
-        private static void getCards()
+        private static void getCards(bool logo=true)
         {
             // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
@@ -154,21 +164,24 @@ namespace clk
 
             if (!isList)
                 return;
-            
-            int br = 0;
+
+            if (logo)
+                Ascii.clkList();
+
+            Console.WriteLine(argController.board);
+            Console.WriteLine(argController.list);
+            Console.WriteLine(argController.card);
             
             // Print out the list information (cards)
-            Console.WriteLine("Board: " + boardName);
-            Console.WriteLine("List : " + listName);
-            Console.WriteLine();
+            commentDestination(boardName, listName);
             Console.WriteLine("Available cards:");
-            
+            int br = 0;
             foreach (Card card in caController.getCards())
             {
                 br++;
                 string cardCount = "  [" + br + "]: ";
                 int cardCountLen = cardCount.Length;
-                Console.WriteLine(cardCount + card.name);
+                Console.WriteLine(cardCount + card.name); // TODO Exception
                 if(!card.description.Equals(""))
                     Console.WriteLine(EyeCandy.indent(cardCountLen) + card.description);
             }
@@ -182,7 +195,7 @@ namespace clk
         /// It will initialize the required controllers,
         /// and pick the selected Card from the list of cards (card controller).
         /// </summary>
-        private static void getCard()
+        private static void getCard(bool logo=true)
         {
             // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
@@ -192,17 +205,18 @@ namespace clk
             if (!isCard)
                 return;
             
+            if (logo)
+                Ascii.clkCard();
+            
             Card c = caController.getCards().Find(x => x.id == cardId);
 
             // Print out some godsend information about this selection!
-            Console.WriteLine("Board: " + boardName);
-            Console.WriteLine("List : " + listName);
-            Console.WriteLine();
-            Console.WriteLine("Card: " + c.name);
+            commentDestination(boardName, listName, c.name);
             Console.WriteLine(EyeCandy.indent(6) + c.description);
-
-            int chBr = 0;
             Console.WriteLine();
+
+            // Checklist section
+            int chBr = 0;
             Console.WriteLine("Checklist(s):");
             foreach (Checklist checklist in caController.getChecklists(cardId))
             {
@@ -222,6 +236,7 @@ namespace clk
                 Console.WriteLine();
             }
 
+            // Comment section
             int br = 0;
             Console.WriteLine();
             Console.WriteLine("Comment(s):");
@@ -234,6 +249,8 @@ namespace clk
                 Console.WriteLine(EyeCandy.indent(outCountLen) + comment.comment);
                 Console.WriteLine();
             }
+
+            Console.WriteLine();
         }
         
 
@@ -252,6 +269,8 @@ namespace clk
             // Initialize the controller and loop through all the --new-board to create accordingly
             iniOvController();
             
+            Ascii.clk();
+            
             // If --new-list is included as parameter, create those for the board(s) too.
             List<string> lists = new List<string>();
             foreach (var arg in argController.getKeyVal()["--new-list"])
@@ -262,6 +281,7 @@ namespace clk
                 lists.Add(arg);
             }
             
+            // Loop through all the --new-boards and create accordingly
             string newBoardId;
             foreach (var val in keyVal)
             {
@@ -286,7 +306,7 @@ namespace clk
             }
 
             Console.WriteLine();
-            getBoards();
+            getBoards(false);
         }
 
         /// <summary>
@@ -305,6 +325,8 @@ namespace clk
             if (!isBoard)
                 return;
             
+            Ascii.clkBoard();
+            
             // TODO: Create all cards too
             
             // Loop through each of the --new-list and create lists accordingly
@@ -318,10 +340,8 @@ namespace clk
             }
             
             // Print out some sweet info for this selection
-            Console.WriteLine("In board    : " + boardName);
-            Console.WriteLine();
- 
-            getLists();
+            commentAction(boardName);
+            getLists(false);
         }
 
         /// <summary>
@@ -339,6 +359,8 @@ namespace clk
 
             if (!isList)
                 return;
+            
+            Ascii.clkList();
             
             // This will handle if you provide a --description along with a new card.
             string description = argController.getKeyVal()["--description"].First();
@@ -379,11 +401,8 @@ namespace clk
             }
             
             // Print some good info for this selection
-            Console.WriteLine("In list     : " + listName);
-            Console.WriteLine("In board    : " + boardName);
-            Console.WriteLine();
-
-            getCards();
+            commentAction(boardName, listName);
+            getCards(false);
         }
 
         /// <summary>
@@ -394,10 +413,6 @@ namespace clk
         /// <param name="keyVal">The KeyVal args from ToLookup</param>
         private static void createDescription(IGrouping<string, string> keyVal)
         {
-            // If description is empty, return
-            if (keyVal.FirstOrDefault().Equals("")) //TODO: This is kinda sketchy.. Fix so you can loop through perhaps.
-                return;
-            
             // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
             iniLiController(boardId);
@@ -406,16 +421,14 @@ namespace clk
             if (!isCard)
                 return;
             
+            Ascii.clkCard();
+            
             caController.createDescription(keyVal.FirstOrDefault(), cardId);
 
             // Print out some info nice for this selection
             Console.WriteLine("Created description: " + keyVal.FirstOrDefault());
-            Console.WriteLine("In card : " + cardName);
-            Console.WriteLine("In list : " + listName);
-            Console.WriteLine("In board: " + boardName);
-            Console.WriteLine();
-
-            getCard();
+            commentAction(boardName, listName, cardName);
+            getCard(false);
         }
 
         /// <summary>
@@ -435,6 +448,8 @@ namespace clk
             if (!isCard)
                 return;
             
+            Ascii.clkCard();
+            
             // Loop through and create each comment
             foreach (var val in keyVal)
             {
@@ -446,12 +461,8 @@ namespace clk
             }
             
             // Print some good info for this selection
-            Console.WriteLine("In card     : " + cardName);
-            Console.WriteLine("In list     : " + listName);
-            Console.WriteLine("In board    : " + boardName);
-            Console.WriteLine();
-
-            getCard();
+            commentAction(boardName, listName, cardName);
+            getCard(false);
         }
 
         /// <summary>
@@ -469,6 +480,8 @@ namespace clk
 
             if (!isCard)
                 return;
+            
+            Ascii.clkCard();
             
             // If --checkp (points) is included as parameter, create those for the checklist too.
             List<string> points = new List<string>();
@@ -498,12 +511,8 @@ namespace clk
             }
             
             // Print some good info for this selection
-            Console.WriteLine("In card          : " + cardName);
-            Console.WriteLine("In list          : " + listName);
-            Console.WriteLine("In board         : " + boardName);
-            Console.WriteLine();
-
-            getCard();
+            commentAction(boardName, listName, cardName);
+            getCard(false);
         }
 
         /// <summary>
@@ -521,29 +530,26 @@ namespace clk
 
             if (!isCard)
                 return;
+            
+            Ascii.clkCard();
 
             if (!Validators.inList(caController.getChecklists(cardId), argController.check))
                 return;
             
             string checklistId = ObjectValues.getValueFromList(caController.getChecklists(cardId), argController.check, "id");
             string checklistName = caController.getChecklists(cardId)
-                .Find(x => x.id == checklistId)
-                .name;
+                                   .Find(x => x.id == checklistId)
+                                   .name;
 
             foreach (string val in keyVal)
             {
                 caController.createChecklistPoint(val, checklistId);
                 Console.WriteLine("Created checklist point: " + val);
             }
-
-            // Print some good info for this selection
-            Console.WriteLine("In checklist           : " + checklistName);
-            Console.WriteLine("In card                : " + cardName);
-            Console.WriteLine("In list                : " + listName);
-            Console.WriteLine("In board               : " + boardName);
-            Console.WriteLine();
-
-            getCard();
+            
+            // Print out some dope information!
+            commentAction(boardName, listName, cardName, checklistName);
+            getCard(false);
         }
         
 
@@ -602,6 +608,54 @@ namespace clk
         }
         
         #endregion
+
+        #region "View" methods - For displaying information in the terminal
+
+        /// <summary>
+        /// THis is used to print out a nice finish in the bottom of each "view".
+        /// It is called from the create methods in this document.
+        /// </summary>
+        /// <param name="boardName">The board name to print out</param>
+        /// <param name="listName">The list name to print out</param>
+        /// <param name="cardName">The card name to print out</param>
+        /// <param name="checklistName">The checklist name to print out</param>
+        private static void commentAction(string boardName="", 
+            string listName="", 
+            string cardName="", 
+            string checklistName="")
+        {
+            if (!checklistName.Equals(""))
+                Console.WriteLine("In checklist : " + checklistName);
+            if (!cardName.Equals(""))
+                Console.WriteLine("In card      : " + cardName);
+            if (!listName.Equals(""))
+                Console.WriteLine("In list      : " + listName);
+            if (!boardName.Equals(""))
+                Console.WriteLine("In board     :");
+            Console.WriteLine();
+        }
+
+        /// <summary>
+        /// This is used to print out common information in your current location (Board, List & Card)
+        /// This is called in the get methods within this document
+        /// </summary>
+        /// <param name="boardName"></param>
+        /// <param name="listName"></param>
+        /// <param name="cardName"></param>
+        private static void commentDestination(string boardName="", 
+            string listName="", 
+            string cardName="")
+        {
+            if (!boardName.Equals(""))
+                Console.WriteLine("["+ ++argController.board +"] Board: " + boardName);
+            if (!listName.Equals(""))
+                Console.WriteLine("["+ ++argController.list +"] List : " + listName);
+            if (!cardName.Equals(""))
+                Console.WriteLine("["+ ++argController.card +"] Card : " + cardName);
+            Console.WriteLine();
+        }
         
+
+        #endregion
     }
 }

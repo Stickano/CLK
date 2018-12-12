@@ -58,6 +58,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\About.cs" />
+    <Compile Include="Resources\Ascii.cs" />
     <Compile Include="Resources\EyeCandy.cs" />
     <Compile Include="Resources\ObjectValues.cs" />
     <Compile Include="Resources\Random.cs" />
