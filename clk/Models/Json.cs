@@ -72,6 +72,10 @@ namespace clk.Models
                 File.Create("Json/lists.json").Close();
             if (!File.Exists("Json/comments.json"))
                 File.Create("Json/comments.json").Close();
+            if (!File.Exists("Json/checklists.json"))
+                File.Create("Json/checklists.json").Close();
+            if (!File.Exists("Json/points.json"))
+                File.Create("Json/points.json").Close();
         }
     }
 }

@@ -64,6 +64,9 @@ namespace clk
                 
                 if (keyVal.Key.Equals("--comment") && !argController.newCard)
                     createComment(keyVal);
+                
+                if (keyVal.Key.Equals("--check"))
+                    
                
             }
         }
@@ -100,8 +103,11 @@ namespace clk
             if (argController.board < 0)
                 return;
 
-            // Initialize the required controllers and set some needed values
+            // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
+            if (!Validators.inList(ovController.boards, argController.board))
+                return;
+            
             iniLiController(boardId);
             
             int br = 0;
@@ -131,9 +137,15 @@ namespace clk
             if (argController.board < 0 || argController.list < 0)
                 return;
 
-            // Initialize the required controllers and set some needed data
+            // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
+            if (!Validators.inList(ovController.boards, argController.board))
+                return;
+            
             iniLiController(boardId);
+            if (!Validators.inList(liController.lists, argController.list))
+                return;
+            
             iniCaController(listId);
             
             int br = 0;
@@ -169,10 +181,18 @@ namespace clk
             if (argController.board < 0 || argController.list < 0 || argController.card < 0)
                 return;
             
-            // Initialize the needed controllers, and get the required values
+            // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
+            if (!Validators.inList(ovController.boards, argController.board))
+                return;
+            
             iniLiController(boardId);
+            if (!Validators.inList(liController.lists, argController.list))
+                return;
+            
             iniCaController(listId);
+            if (!Validators.inList(caController.cards, argController.card))
+                return;
             
             Card c = caController.getCards().Find(x => x.id == cardId);
 
@@ -191,7 +211,10 @@ namespace clk
             foreach (Comment comment in caController.getComments(cardId))
             {
                 br++;
-                Console.WriteLine("  ["+ br +"]: " + comment.comment);
+                string outCount = "  [" + br + "]: ";
+                int outCountLen = outCount.Length;
+                Console.WriteLine(outCount + "[" + comment.created + "]");
+                Console.WriteLine(EyeCandy.indent(outCountLen) + comment.comment);
                 Console.WriteLine();
             }
         }
@@ -206,6 +229,18 @@ namespace clk
         {   
             // Initialize the controller and loop through all the --new-board to create accordingly
             iniOvController();
+            
+            // If --new-list is included as parameter, create those for the board(s) too.
+            List<string> lists = new List<string>();
+            foreach (var arg in argController.getKeyVal()["--new-list"])
+            {
+                if (arg.Equals(""))
+                    continue;
+
+                lists.Add(arg);
+            }
+            
+            string newBoardId;
             foreach (var val in keyVal)
             {
                 // Skip if the value is empty
@@ -213,8 +248,19 @@ namespace clk
                     continue;
                 
                 // Create the board
-                ovController.createBoard(val);
+                newBoardId = ovController.createBoard(val);
                 Console.WriteLine("Created board: " + val);
+
+                // Handle new lists
+                if (lists.Count > 0)
+                {
+                    ListController li =  new ListController(newBoardId);
+                    foreach (string list in lists)
+                    {
+                        li.createList(list);
+                        Console.WriteLine("Added list: " + list);
+                    }
+                }
             }
 
             Console.WriteLine();
@@ -234,8 +280,11 @@ namespace clk
             if (argController.board < 0)
                 return;
 
-            // Initialize the required controller and set some needed values
+            // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
+            if (!Validators.inList(ovController.boards, argController.board))
+                return;
+            
             iniLiController(boardId);
             
             // Loop through each of the --new-list and create lists accordingly
@@ -267,33 +316,55 @@ namespace clk
             if (argController.board < 0 || argController.list < 0)
                 return;
             
-            // Initialize the needed controllers and set some required data
+            // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
+            if (!Validators.inList(ovController.boards, argController.board))
+                return;
+            
             iniLiController(boardId);
+            
+            // Make sure the input is actual available in our list
+            if (!Validators.inList(liController.lists, argController.list))
+                return;
+            
             iniCaController(listId);
             
             // This will handle if you provide a --description along with a new card.
-            string description = "";
-            foreach (IGrouping<string, string> arg in argController.getKeyVal())
+            string description = argController.getKeyVal()["--description"].First();
+
+            // If --comment is included as parameter, create those for the card too.
+            List<string> comments = new List<string>();
+            foreach (var arg in argController.getKeyVal()["--comment"])
             {
-                if (arg.Key.Equals("--description") 
-                    && arg.Count() == 1
-                    && !arg.FirstOrDefault().Equals(""))
-                    description = arg.FirstOrDefault();
+                if (arg.Equals(""))
+                    continue;
+
+                comments.Add(arg);
             }
             
             // Loop through all the --new-cards and create accordingly
+            string newCardId;
             foreach (var val in keyVal)
             {   
                 // Create the card
-                caController.createCard(val, description);
+                newCardId = caController.createCard(val, description);
                 Console.WriteLine("Created card: " + val);
 
                 // If a description was available, print that too
                 if (!description.Equals(""))
+                    Console.WriteLine(EyeCandy.indent(2) + description);
+                
+                // And the comments
+                if (comments.Count > 0)
                 {
-                    Console.WriteLine(EyeCandy.indent(2) + description);               
+                    Console.WriteLine();
+                    foreach (string comment in comments)
+                    {
+                        caController.createComment(comment, newCardId);
+                        Console.WriteLine("Added comment: " + comment);
+                    }
                 }
+                
             }
             
             // Print some good info for this selection
@@ -321,10 +392,18 @@ namespace clk
                 return;
             
             
-            // Initialize the needed controllers, and get the required values
+            // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
+            if (!Validators.inList(ovController.boards, argController.board))
+                return;
+            
             iniLiController(boardId);
+            if (!Validators.inList(liController.lists, argController.list))
+                return;
+            
             iniCaController(listId);
+            if (!Validators.inList(caController.cards, argController.card))
+                return;
             
             caController.createDescription(keyVal.FirstOrDefault(), cardId);
 
@@ -351,11 +430,19 @@ namespace clk
             if (argController.board < 0 || argController.list < 0 || argController.card < 0)
                 return;
             
-            // Initialize required controllers and set some valuable variables
+            // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
+            if (!Validators.inList(ovController.boards, argController.board))
+                return;
+            
             iniLiController(boardId);
+            if (!Validators.inList(liController.lists, argController.list))
+                return;
+            
             iniCaController(listId);
-
+            if (!Validators.inList(caController.cards, argController.card))
+                return;
+            
             // Loop through and create each comment
             foreach (var val in keyVal)
             {
@@ -370,7 +457,29 @@ namespace clk
             Console.WriteLine();
 
             getCard();
-            //getCards();
+        }
+
+        private static void createChecklist(IGrouping<string, string> keyVal)
+        {
+            // Make sure board, list and card is selected
+            if (argController.board < 0 || argController.list < 0 || argController.card < 0)
+                return;
+            
+            // Initialize controllers and validate that the user-inputs are available in their respectful lists
+            iniOvController();
+            if (!Validators.inList(ovController.boards, argController.board))
+                return;
+            
+            iniLiController(boardId);
+            if (!Validators.inList(liController.lists, argController.list))
+                return;
+            
+            iniCaController(listId);
+            if (!Validators.inList(caController.cards, argController.card))
+                return;
+            
+            
+            
         }
 
         /// <summary>

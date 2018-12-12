@@ -24,15 +24,16 @@ namespace clk.Controllers
         /// just provide a name for the new board.
         /// </summary>
         /// <param name="boardName">The name of the new board.</param>
-        public void createBoard(string boardName)
+        public string createBoard(string boardName)
         {
             string created = Time.timestamp();
             string id = Random.guid();
 
             Board board = new Board(id, boardName, created);
             boards.Add(board);
-            
             json.writeFile(boards);
+
+            return id;
         }
     }
 }

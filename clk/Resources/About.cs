@@ -13,6 +13,8 @@ namespace clk.Resources
         public static void usage()
         {
             Console.WriteLine("CLI Kanban - Usage options and examples:");
+            Console.WriteLine("This tool is very versatile and the parameters can be combined in a number of ways.");
+            Console.WriteLine("Below information is just to get you started. For more information and usage examples, visit: www.website.com");
             Console.WriteLine();
             Console.WriteLine("-h --help    This message");
             Console.WriteLine("-a --about   Version and program information");
@@ -24,6 +26,10 @@ namespace clk.Resources
             Console.WriteLine("--new-board    Create a new board");
             Console.WriteLine("--new-list     Create a new list");
             Console.WriteLine("--new-card     Create a new card");
+            Console.WriteLine();
+            Console.WriteLine("--check        Create a new checklist");
+            Console.WriteLine("--checkp       Create a new checkpoint, in a checklist");
+            Console.WriteLine();
             Console.WriteLine("--description  Description is available for Cards only!");
             Console.WriteLine("--comment      Comment is available for Cards only!");
             Console.WriteLine();
@@ -40,6 +46,10 @@ namespace clk.Resources
             Console.WriteLine();
             Console.WriteLine("New board w/ lists:    clk --new-board=\"My Project\" --new-list=\"TODO\" --new-list=\"Done\"");
             Console.WriteLine("New cards:             clk -b=2 -l=1 --new-card=\"This\" --new-card=\"That\"");
+            Console.WriteLine();
+            Console.WriteLine("Create a checklist:            clk -b=2 -l=1 -c=5 --check=\"New Checklist\"");
+            Console.WriteLine("Create a checklist point:      clk -b=2 -l=1 -c=5 --checkp=\"New checklist point\"");
+            Console.WriteLine("Create a checklist w/ points:  clk -b=2 -l=1 -c=5 --check=\"To Profit\" --checkp=\"This\" --checkp=\"That\"");
             Console.WriteLine();
             Console.WriteLine("Add description to a card:   clk -b=2 -l=1 -c=5 --description=\"This is information about that thing..\"");
             Console.WriteLine("Add comment to a card:       clk -b=2 -l=1 -c=5 --comment=\"When this, remember that..\"");

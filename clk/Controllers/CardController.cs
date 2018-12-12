@@ -39,7 +39,7 @@ namespace clk.Controllers
         /// Create a new card.
         /// </summary>
         /// <param name="cardName">The name of the new card</param>
-        public void createCard(string cardName, string description="")
+        public string createCard(string cardName, string description="")
         {
             string created = Time.timestamp();
             string id = Random.guid();
@@ -50,6 +50,8 @@ namespace clk.Controllers
             
             cards.Add(card);
             cardJson.writeFile(cards);
+
+            return id;
         }
 
         /// <summary>
@@ -70,7 +72,10 @@ namespace clk.Controllers
         /// <param name="cardId">The ID for the card to comment on</param>
         public void createComment(string comment, string cardId)
         {
-            comments.Add(new Comment{cardId = cardId, comment = comment});
+            string created = Time.timestamp();
+            string id = Random.guid();
+            
+            comments.Add(new Comment{cardId = cardId, comment = comment, id = id, created = created});
             commentJson.writeFile(comments);
         }
 
