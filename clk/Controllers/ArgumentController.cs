@@ -12,6 +12,7 @@ namespace clk.Controllers
         private int _list;
         private int _card;
         private int _check;
+        private int _point;
 
         public int board
         {
@@ -33,6 +34,11 @@ namespace clk.Controllers
             get { return _check; }
             set { _check = value; }
         }
+        public int point
+        {
+            get { return _point; }
+            set { _point = value; }
+        }
 
         public bool boardOverview { get; set; }
         public bool newCard { get; set; }
@@ -40,8 +46,10 @@ namespace clk.Controllers
         public bool newComment { get; set; }
         public bool newCheck { get; set; }
         public bool newPoint { get; set; }
+        public bool newList { get; set; }
 
         public bool easter { get; set; }
+        public bool easterAhAhAh { get; set; }
 
         public ArgumentController(string[] args)
         {
@@ -50,6 +58,7 @@ namespace clk.Controllers
             list = -1;
             card = -1;
             check = -1;
+            point = -1;
             
             sortArgs(args);
         }
@@ -123,6 +132,8 @@ namespace clk.Controllers
                     newCheck = true;
                 if (keyVal[0].Equals("--new-point"))
                     newPoint = true;
+                if (keyVal[0].Equals("--new-list"))
+                    newList = true;
                 
                 // Will set global variables, so we know which board, list or card we are working with.
                 if (keyVal[0].Equals("-b") && Validators.isInt(val))
@@ -147,6 +158,12 @@ namespace clk.Controllers
                 {
                     int.TryParse(val, out _check);
                     _check--;
+                }
+
+                if (keyVal[0].Equals("--point") && Validators.isInt(val))
+                {
+                    int.TryParse(val, out _point);
+                    _point--;
                 }
 
                 Argument argument = new Argument {key = keyVal[0], value = val};

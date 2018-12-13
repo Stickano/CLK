@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace clk.Resources
 {
@@ -65,6 +66,15 @@ namespace clk.Resources
             Console.WriteLine("   \\ \\____/    \\ \\____/    \\ \\_\\ \\_\\");
             Console.WriteLine("    \\/___/      \\/___/      \\/_/\\/_/");
             Console.WriteLine();
+        }
+
+        public static void ahahah()
+        {
+            string[] lines = File.ReadAllLines("kek.txt");
+            foreach (string line in lines)
+            {
+                Console.WriteLine(line);
+            }
         }
     }
 }

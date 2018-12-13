@@ -159,9 +159,24 @@ namespace clk.Controllers
         /// </summary>
         /// <param name="checklistId">The checklist ID that holds the point(s)</param>
         /// <returns>List of ChecklistPoint</returns>
-        public List<ChecklistPoint> getChecklistPoints(string checklistId)
+        public List<ChecklistPoint> getChecklistPoints(string checklistId = "")
         {
+            if (checklistId.Equals(""))
+                return points;
+            
             return points.FindAll(x => x.checklistId == checklistId).ToList();
+        }
+
+        /// <summary>
+        /// This will check/uncheck a point in a checklist.
+        /// </summary>
+        /// <param name="checklistPointId">The ID of the point to check/uncheck</param>
+        public void clickPoint(string checklistPointId)
+        {
+            var p = points.FindIndex(x => x.id == checklistPointId);
+            points[p].isCheck = !points[p].isCheck;
+            
+            pointJson.writeFile(points);
         }
     }
 }

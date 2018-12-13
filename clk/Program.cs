@@ -21,10 +21,13 @@ namespace clk
         private static string listName;
         private static string cardId;
         private static string cardName;
+        private static string checkId;
+        private static string checkName;
 
         private static bool isBoard;
         private static bool isList;
         private static bool isCard;
+        private static bool isCheck;
 
         public static void Main(string[] args)
         {
@@ -38,6 +41,7 @@ namespace clk
             // and perform the action associated with that parameter.
             foreach (IGrouping<string, string> keyVal in argController.getKeyVal())
             {
+                //TODO: FIX THIS MESS
                 if (keyVal.Key.Equals("-h"))
                     About.usage();
                  
@@ -46,7 +50,8 @@ namespace clk
                     getBoards();
                 
                 if (keyVal.Key.Equals("-b") 
-                    && argController.list < 0)
+                    && argController.list < 0 
+                    && !argController.newList)
                     getLists();
                 
                 if (keyVal.Key.Equals("-l") 
@@ -58,7 +63,8 @@ namespace clk
                     && !argController.newComment 
                     && !argController.newDescription
                     && !argController.newCheck
-                    && !argController.newPoint)
+                    && !argController.newPoint
+                    && argController.point < 0)
                     getCard();
                 
                 if (keyVal.Key.Equals("--new-board"))
@@ -84,6 +90,9 @@ namespace clk
                 if (keyVal.Key.Equals("--comment") 
                     && !argController.newCard)
                     createComment(keyVal);
+                
+                if (keyVal.Key.Equals("--point"))
+                    clickPoint(keyVal);
             }
         }
 
@@ -168,10 +177,6 @@ namespace clk
             if (logo)
                 Ascii.clkList();
 
-            Console.WriteLine(argController.board);
-            Console.WriteLine(argController.list);
-            Console.WriteLine(argController.card);
-            
             // Print out the list information (cards)
             commentDestination(boardName, listName);
             Console.WriteLine("Available cards:");
@@ -181,8 +186,8 @@ namespace clk
                 br++;
                 string cardCount = "  [" + br + "]: ";
                 int cardCountLen = cardCount.Length;
-                Console.WriteLine(cardCount + card.name); // TODO Exception
-                if(!card.description.Equals(""))
+                Console.WriteLine(cardCount + card.name);
+                if(card.description != null && !card.description.Equals(""))
                     Console.WriteLine(EyeCandy.indent(cardCountLen) + card.description);
             }
 
@@ -225,12 +230,21 @@ namespace clk
                 int outCountLen = outCount.Length;
                 Console.WriteLine(outCount + checklist.name);
 
+                // Checklist points
                 int pBr = 0;
                 foreach (ChecklistPoint point in caController.getChecklistPoints(checklist.id))
                 {
                     pBr++;
                     string outCountP = "[" + pBr + "]: ";
+
+                    // Colors, colors everywhere!
+                    if (point.isCheck)
+                        EyeCandy.color("green");
+                    else
+                        EyeCandy.color("yellow");
+                    
                     Console.WriteLine(EyeCandy.indent(outCountLen) + outCountP + point.name);
+                    EyeCandy.reset();
                 }
 
                 Console.WriteLine();
@@ -255,6 +269,52 @@ namespace clk
         
 
         #endregion
+
+        /// <summary>
+        /// If --point is incl. this will run.
+        /// It will check/uncheck a point in a checklist -
+        /// Or at least invoke the controller, and let that handle it. 
+        /// </summary>
+        /// <param name="keyVal">KeyVal args from ToLookup (method in argument controller)</param>
+        public static void clickPoint(IGrouping<string, string> keyVal)
+        {
+            // Initialize controllers and validate that the user-inputs are available in their respectful lists
+            iniOvController();
+            iniLiController(boardId);
+            iniCaController(listId);
+            
+            if (!isCard)
+                return;
+            
+            if (!Validators.inList(caController.getChecklistPoints(checkId), argController.point))
+                return;
+            
+            Ascii.clkCard();
+
+            // Loop through all the points and check/uncheck em'
+            foreach (var val in keyVal)
+            {
+                if (!Validators.isInt(val))
+                    continue;
+                
+                int parseArg;
+                int.TryParse(val, out parseArg);
+                parseArg--;
+                
+                ChecklistPoint c = caController.getChecklistPoints(checkId)[parseArg];
+                caController.clickPoint(c.id);
+
+                if (c.isCheck)
+                    Console.WriteLine("Checked point: " + c.name);
+                else
+                    Console.WriteLine("Un-checked point: " + c.name);
+            }
+            
+            commentAction(boardName, listName, cardName, checkName);
+            getCard(false);
+        }
+        
+        
 
         #region Create methods for Boards, Lists, Cards, Comments, Descriptions, Checklists & points
 
@@ -336,7 +396,7 @@ namespace clk
                     continue;
                 
                 liController.createList(val);
-                Console.WriteLine("Created list: " + val);
+                Console.WriteLine("Created list : " + val);
             }
             
             // Print out some sweet info for this selection
@@ -363,7 +423,9 @@ namespace clk
             Ascii.clkList();
             
             // This will handle if you provide a --description along with a new card.
-            string description = argController.getKeyVal()["--description"].First();
+            string description = "";
+            if (argController.getKeyVal()["--description"].Any())
+                description = argController.getKeyVal()["--description"].First();
 
             // If --comment is included as parameter, create those for the card too.
             List<string> comments = new List<string>();
@@ -605,6 +667,14 @@ namespace clk
                 cardId = ObjectValues.getValueFromList(caController.getCards(), argController.card, "id");
                 cardName = ObjectValues.getValueFromList(caController.getCards(), argController.card, "name");    
             }
+
+            if (isCard && argController.check >= 0
+                       && Validators.inList(caController.getChecklists(cardId), argController.check))
+            {
+                isCheck = true;
+                checkId = ObjectValues.getValueFromList(caController.getChecklists(cardId), argController.check, "id");
+                checkName = ObjectValues.getValueFromList(caController.getChecklists(cardId), argController.check, "name");
+            }
         }
         
         #endregion
@@ -625,13 +695,13 @@ namespace clk
             string checklistName="")
         {
             if (!checklistName.Equals(""))
-                Console.WriteLine("In checklist : " + checklistName);
+                Console.WriteLine("In checklist : " + checklistName.Trim());
             if (!cardName.Equals(""))
-                Console.WriteLine("In card      : " + cardName);
+                Console.WriteLine("In card      : " + cardName.Trim());
             if (!listName.Equals(""))
-                Console.WriteLine("In list      : " + listName);
+                Console.WriteLine("In list      : " + listName.Trim());
             if (!boardName.Equals(""))
-                Console.WriteLine("In board     :");
+                Console.WriteLine("In board     : " + boardName.Trim());
             Console.WriteLine();
         }
 
@@ -647,11 +717,11 @@ namespace clk
             string cardName="")
         {
             if (!boardName.Equals(""))
-                Console.WriteLine("["+ ++argController.board +"] Board: " + boardName);
+                Console.WriteLine("["+ ++argController.board +"] Board    : " + boardName);
             if (!listName.Equals(""))
-                Console.WriteLine("["+ ++argController.list +"] List : " + listName);
+                Console.WriteLine("["+ ++argController.list +"] List     : " + listName);
             if (!cardName.Equals(""))
-                Console.WriteLine("["+ ++argController.card +"] Card : " + cardName);
+                Console.WriteLine("["+ ++argController.card +"] Card     : " + cardName);
             Console.WriteLine();
         }
         
