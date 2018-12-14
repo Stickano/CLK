@@ -10,6 +10,8 @@ namespace clk
 {
     internal class Program
     {
+        private static string restUrl = "http://localhost:50066/Service1.svc/";
+
         private static ArgumentController argController;
         private static OverviewController ovController;
         private static ListController liController;
@@ -93,6 +95,9 @@ namespace clk
                 
                 if (keyVal.Key.Equals("--point"))
                     clickPoint(keyVal);
+
+                if (keyVal.Key.Equals("--new-profile"))
+                    createProfile(keyVal);
             }
         }
 
@@ -727,5 +732,27 @@ namespace clk
         
 
         #endregion
+
+        /// <summary>
+        /// If --new-profile is incl. this will run.
+        /// It will call the REST interface to create the profile.
+        /// </summary>
+        /// <param name="keyVal">ToLookup args from argController</param>
+        private static void createProfile(IGrouping<string, string> keyVal)
+        {
+            // Make sure we have a password
+            if (!argController.getKeyVal()["--password"].Any())
+                return;
+
+            // Hash the password
+            string pwHash = Resources.Random.hashString(argController.getKeyVal()["--password"].First());
+
+            Profile p = new Profile();
+            p.email = keyVal.First();
+            p.password = pwHash;
+
+            RestClient rest = new RestClient(restUrl);
+            rest.post(p, "profile/create");
+        }
     }
 }

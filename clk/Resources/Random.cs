@@ -1,4 +1,6 @@
 using System;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace clk.Resources
 {
@@ -11,8 +13,28 @@ namespace clk.Resources
         /// <returns>String uniqueId</returns>
         public static string guid()
         {
-            Guid g = Guid.NewGuid();
-            return g.ToString();
+            return Guid.NewGuid().ToString();
+        }
+
+        /// <summary>
+        /// A function that will hash a string with SHA256 
+        /// </summary>
+        /// <param name="value">The value to hash</param>
+        /// <returns>The hashed value</returns>
+        public static string hashString(string value)
+        {
+            StringBuilder Sb = new StringBuilder();
+
+            using (var hash = SHA256.Create())
+            {
+                Encoding enc = Encoding.UTF8;
+                Byte[] result = hash.ComputeHash(enc.GetBytes(value));
+
+                foreach (Byte b in result)
+                    Sb.Append(b.ToString("x2"));
+            }
+
+            return Sb.ToString();
         }
     }
 }
