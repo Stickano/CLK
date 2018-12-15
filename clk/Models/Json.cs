@@ -21,7 +21,7 @@ namespace clk.Models
         /// This will write a List of T into one of
         /// the available Json files.
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="data">A generic list of content to be written</param>
         public void writeFile<T>(List<T> data)
         {
             using (StreamWriter writer = File.CreateText(jsonDir + file))

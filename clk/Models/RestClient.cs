@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
@@ -57,8 +58,8 @@ namespace clk.Models
         {
             var serializedJson = JsonConvert.SerializeObject(obj);
 
-            var request = WebRequest.Create(url + "profile/create");
-            var enc = new UTF8Encoding(false);
+            HttpWebRequest request = WebRequest.Create(url+queryString) as HttpWebRequest;
+            var enc = new UTF8Encoding(true);
             var data = enc.GetBytes(serializedJson);
 
             request.Method = "POST";
@@ -69,8 +70,16 @@ namespace clk.Models
             {
                 reader.Write(data, 0, data.Length);
             }
-            var response = request.GetResponse();
-            return new StreamReader(response.GetResponseStream()).ReadToEnd();
+
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            //WebHeaderCollection header = response.Headers;
+
+            var encoding = ASCIIEncoding.ASCII;
+            using (var reader = new StreamReader(response.GetResponseStream(), encoding))
+            {
+                string responseText = reader.ReadToEnd();
+                return responseText;
+            }
         }
     }
 }

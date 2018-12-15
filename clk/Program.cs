@@ -5,12 +5,15 @@ using System.Security.Cryptography.X509Certificates;
 using clk.Controllers;
 using clk.Models;
 using clk.Resources;
+using Newtonsoft.Json;
 
 namespace clk
 {
     internal class Program
     {
         private static string restUrl = "http://localhost:50066/Service1.svc/";
+
+        private static Profile user;
 
         private static ArgumentController argController;
         private static OverviewController ovController;
@@ -98,6 +101,12 @@ namespace clk
 
                 if (keyVal.Key.Equals("--new-profile"))
                     createProfile(keyVal);
+
+                if (keyVal.Key.Equals("--login"))
+                    login(keyVal);
+
+                if (keyVal.Key.Equals("--save-board"))
+                    saveBoard();
             }
         }
 
@@ -753,6 +762,80 @@ namespace clk
 
             RestClient rest = new RestClient(restUrl);
             rest.post(p, "profile/create");
+        }
+
+        /// <summary>
+        /// If --login is incl. this wil run.
+        /// It will fetch the corresponding profile,
+        /// from the database, to the provided values.
+        /// If profile was not found, the user will not login.
+        /// </summary>
+        /// <param name="keyVal">From ToLookup method in argController</param>
+        private static void login(IGrouping<string, string> keyVal)
+        {
+            // Make sure we have a password
+            if (!argController.getKeyVal()["--password"].Any())
+                return;
+
+            // Hash the password
+            string pwHash = Resources.Random.hashString(argController.getKeyVal()["--password"].First());
+
+            string email = keyVal.First();
+
+            user = new Profile();
+            user.email = email;
+            user.password = pwHash;
+            
+            RestClient client = new RestClient(restUrl);
+            string c = client.post(user, "profile/login");
+            Profile response = JsonConvert.DeserializeObject<Profile>(c);
+
+            if (response.id == null)
+            {
+                Ascii.ahahah();
+                Environment.Exit(0);
+            }
+
+            user.id = response.id;
+            user.created = response.created;
+            user.username = response.username;
+        }
+
+        private static void saveBoard()
+        {
+            iniOvController();
+            iniLiController(boardId);
+            iniCaController(listId);
+
+            Console.WriteLine(boardId);
+            Console.WriteLine(listId);
+            
+            //TODO: loop through lists
+            // In that loop, loop through all cards,
+            // in that loop, loop through all comments and checklists,
+            // in that loop, loop through all checklist points
+            // wat.. Use the FindAll() of course. bobobob, how to do this smartest.
+
+            // Gather the information needed for the http request
+            Board b = ovController.boards.Find(x => x.id == boardId);
+            List<List> lists = liController.getLists();
+            List<Card> cards = caController.getCards();
+            List<Checklist> checklists = caController.getChecklists(cardId);
+            List<ChecklistPoint> points = caController.getChecklistPoints(checkId);
+            List<Comment> comments = caController.getComments(cardId);
+
+            List<object> toQuery = new List<object>();
+            toQuery.Add(b);
+            toQuery.Add(lists);
+            toQuery.Add(cards);
+            toQuery.Add(checklists);
+            toQuery.Add(points);
+            toQuery.Add(comments);
+            toQuery.Add(user.id);
+            toQuery.Add(user.password);
+
+            RestClient rest = new RestClient(restUrl);
+            Console.WriteLine(rest.post(toQuery, "board/save"));
         }
     }
 }
