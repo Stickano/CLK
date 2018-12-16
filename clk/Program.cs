@@ -789,7 +789,7 @@ namespace clk
             RestClient client = new RestClient(restUrl);
             string c = client.post(user, "profile/login");
             Profile response = JsonConvert.DeserializeObject<Profile>(c);
-
+            
             if (response.id == null)
             {
                 Ascii.ahahah();
@@ -802,40 +802,18 @@ namespace clk
         }
 
         private static void saveBoard()
-        {
+        { 
+
             iniOvController();
-            iniLiController(boardId);
-            iniCaController(listId);
-
-            Console.WriteLine(boardId);
-            Console.WriteLine(listId);
             
-            //TODO: loop through lists
-            // In that loop, loop through all cards,
-            // in that loop, loop through all comments and checklists,
-            // in that loop, loop through all checklist points
-            // wat.. Use the FindAll() of course. bobobob, how to do this smartest.
-
             // Gather the information needed for the http request
-            Board b = ovController.boards.Find(x => x.id == boardId);
-            List<List> lists = liController.getLists();
-            List<Card> cards = caController.getCards();
-            List<Checklist> checklists = caController.getChecklists(cardId);
-            List<ChecklistPoint> points = caController.getChecklistPoints(checkId);
-            List<Comment> comments = caController.getComments(cardId);
+            BoardController bc = new BoardController(boardId);
 
-            List<object> toQuery = new List<object>();
-            toQuery.Add(b);
-            toQuery.Add(lists);
-            toQuery.Add(cards);
-            toQuery.Add(checklists);
-            toQuery.Add(points);
-            toQuery.Add(comments);
-            toQuery.Add(user.id);
-            toQuery.Add(user.password);
-
+            bc.userId = user.id;
+            bc.password = user.password;
+            
             RestClient rest = new RestClient(restUrl);
-            Console.WriteLine(rest.post(toQuery, "board/save"));
+            Console.WriteLine(rest.post(bc, "board/save"));
         }
     }
 }

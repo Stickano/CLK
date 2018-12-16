@@ -56,8 +56,9 @@ namespace clk.Models
         /// <returns></returns>
         public string post<T>(T obj, string queryString)
         {
+            
             var serializedJson = JsonConvert.SerializeObject(obj);
-
+            Console.WriteLine(serializedJson);
             HttpWebRequest request = WebRequest.Create(url+queryString) as HttpWebRequest;
             var enc = new UTF8Encoding(true);
             var data = enc.GetBytes(serializedJson);

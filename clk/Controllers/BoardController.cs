@@ -7,12 +7,20 @@ namespace clk.Controllers
     {
         private string boardId;
 
-        public List<List> Lists { get; set; }
-        public List<Card> Cards { get; set; }
-        public List<Checklist> Checklists { get; set; }
-        public List<ChecklistPoint> ChecklistPoints { get; set; }
-        public List<Comment> Comments { get; set; }
+        public string name { get; set; }
+        public string created { get; set; }
+        public string id { get; set; }
 
+        public List<List> lists { get; set; }
+        public List<Card> cards { get; set; }
+        public List<Checklist> checklists { get; set; }
+        public List<ChecklistPoint> points { get; set; }
+        public List<Comment> comments { get; set; }
+
+        public string userId { get; set; }
+        public string password { get; set; }
+
+        private Json boardJson;
         private Json listJson;
         private Json cardJson;
         private Json checkJson;
@@ -23,11 +31,26 @@ namespace clk.Controllers
         {
             this.boardId = boardId;
 
+            boardJson = new Json("boards.json");
             listJson = new Json("lists.json");
             cardJson = new Json("cards.json");
             checkJson = new Json("checklists.json");
             pointJson = new Json("points.json");
             commentJson = new Json("comments.json");
+
+            lists = new List<List>();
+            cards = new List<Card>();
+            checklists = new List<Checklist>();
+            comments = new List<Comment>();
+            points = new List<ChecklistPoint>();
+
+            password = "";
+            userId = "";
+
+            Board b = boardJson.readFile<Board>().Find(x => x.id == boardId);
+            name = b.name;
+            created = b.created;
+            id = boardId;
 
             // Start a chain-reaction and populte all our lists
             populateLists();
@@ -39,7 +62,7 @@ namespace clk.Controllers
         /// </summary>
         private void populateLists()
         {
-            Lists = listJson.readFile<List>().FindAll(x => x.boardId == boardId);
+            lists = listJson.readFile<List>().FindAll(x => x.boardId == boardId);
             populateCards();
         }
 
@@ -50,9 +73,9 @@ namespace clk.Controllers
         /// </summary>
         private void populateCards()
         {
-            foreach (List list in Lists)
+            foreach (List list in lists)
             {
-                Cards.AddRange(cardJson.readFile<Card>().FindAll(x => x.listId == list.id));
+                cards.AddRange(cardJson.readFile<Card>().FindAll(x => x.listId == list.id));
             }
 
             populateChecklistsAndComments();
@@ -65,10 +88,10 @@ namespace clk.Controllers
         /// </summary>
         private void populateChecklistsAndComments()
         {
-            foreach (Card card in Cards)
+            foreach (Card card in cards)
             {
-                Checklists.AddRange(checkJson.readFile<Checklist>().FindAll(x => x.cardId == card.id));
-                Comments.AddRange(commentJson.readFile<Comment>().FindAll(x => x.cardId == card.id));
+                checklists.AddRange(checkJson.readFile<Checklist>().FindAll(x => x.cardId == card.id));
+                comments.AddRange(commentJson.readFile<Comment>().FindAll(x => x.cardId == card.id));
             }
 
             populatePoints();
@@ -81,9 +104,9 @@ namespace clk.Controllers
         /// </summary>
         private void populatePoints()
         {
-            foreach (Checklist checklist in Checklists)
+            foreach (Checklist checklist in checklists)
             {
-                ChecklistPoints.AddRange(pointJson.readFile<ChecklistPoint>().FindAll(x => x.checklistId == checklist.id));
+                points.AddRange(pointJson.readFile<ChecklistPoint>().FindAll(x => x.checklistId == checklist.id));
             }
         }
     }
