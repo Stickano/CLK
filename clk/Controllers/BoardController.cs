@@ -50,7 +50,6 @@ namespace clk.Controllers
             Board b = boardJson.readFile<Board>().Find(x => x.id == boardId);
             name = b.name;
             created = b.created;
-            id = boardId;
 
             // Start a chain-reaction and populte all our lists
             populateLists();
