@@ -166,6 +166,12 @@ namespace clk.Controllers
                     _point--;
                 }
 
+                if (keyVal[0].Equals("--save-board") && Validators.isInt(val))
+                {
+                    int.TryParse(val, out _board);
+                    _board--;
+                }
+
                 Argument argument = new Argument {key = keyVal[0], value = val};
                 argList.Add(argument);
             }

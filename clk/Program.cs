@@ -1,15 +1,21 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using clk.Controllers;
 using clk.Models;
 using clk.Resources;
+using Newtonsoft.Json;
 
 namespace clk
 {
     internal class Program
     {
+        private static string restUrl = "http://localhost:50066/Service1.svc/";
+
+        private static Profile user;
+
         private static ArgumentController argController;
         private static OverviewController ovController;
         private static ListController liController;
@@ -93,6 +99,21 @@ namespace clk
                 
                 if (keyVal.Key.Equals("--point"))
                     clickPoint(keyVal);
+
+                if (keyVal.Key.Equals("--new-profile"))
+                    createProfile(keyVal);
+
+                if (keyVal.Key.Equals("--login"))
+                    login(keyVal);
+
+                if (keyVal.Key.Equals("--save-board"))
+                    saveBoard();
+
+                if (keyVal.Key.Equals("--cloud-boards"))
+                    dbGetAllBoards();
+
+                if (keyVal.Key.Equals("--cloud-get"))
+                    dbGetBoard(keyVal);
             }
         }
 
@@ -313,8 +334,6 @@ namespace clk
             getCard(false);
         }
         
-        
-
         #region Create methods for Boards, Lists, Cards, Comments, Descriptions, Checklists & points
 
         /// <summary>
@@ -743,7 +762,120 @@ namespace clk
             }
             Console.WriteLine();
         }
+
+
+        #endregion
         
+        #region Cloud methods
+
+        /// <summary>
+        /// If --new-profile is incl. this will run.
+        /// It will call the REST interface to create the profile.
+        /// </summary>
+        /// <param name="keyVal">ToLookup args from argController</param>
+        private static void createProfile(IGrouping<string, string> keyVal)
+        {
+            // Make sure we have a password
+            if (!argController.getKeyVal()["--password"].Any())
+                return;
+
+            // Hash the password
+            string pwHash = Resources.Random.hashString(argController.getKeyVal()["--password"].First());
+
+            Profile p = new Profile();
+            p.email = keyVal.First();
+            p.password = pwHash;
+
+            RestClient rest = new RestClient(restUrl);
+            rest.post(p, "profile/create");
+        }
+
+        /// <summary>
+        /// If --login is incl. this wil run.
+        /// It will fetch the corresponding profile,
+        /// from the database, to the provided values.
+        /// If profile was not found, the user will not login.
+        /// </summary>
+        /// <param name="keyVal">From ToLookup method in argController</param>
+        private static void login(IGrouping<string, string> keyVal)
+        {
+            // Make sure we have a password
+            if (!argController.getKeyVal()["--password"].Any())
+                return;
+
+            // Hash the password
+            string pwHash = Resources.Random.hashString(argController.getKeyVal()["--password"].First());
+
+            string email = keyVal.First();
+
+            user = new Profile();
+            user.email = email;
+            user.password = pwHash;
+
+            RestClient client = new RestClient(restUrl);
+            string c = client.post(user, "profile/login");
+            Profile response = JsonConvert.DeserializeObject<Profile>(c);
+
+            if (response.id == null)
+            {
+                Ascii.ahahah();
+                Environment.Exit(0);
+            }
+
+            user.id = response.id;
+            user.created = response.created;
+            user.username = response.username;
+        }
+
+        /// <summary>
+        /// Save a board to the cloud!
+        /// </summary>
+        private static void saveBoard()
+        {
+            iniOvController();
+
+            // Gather the information needed for the http request
+            BoardController bc = new BoardController(boardId);
+
+            bc.userId = user.id;
+            bc.password = user.password;
+
+            RestClient rest = new RestClient(restUrl);
+            rest.post(bc, "board/save");
+        }
+
+        private static IList<BoardController> dbGetAllBoards()
+        {
+            RestClient rest = new RestClient(restUrl);
+            string c = rest.post(user, "board/getall");
+            Console.WriteLine(c);
+            IList<BoardController> response = JsonConvert.DeserializeObject<IList<BoardController>>(c);
+
+            foreach (BoardController bc in response)
+            {
+                Console.WriteLine(bc.name);
+            }
+
+            return response;
+        }
+
+        private static void dbGetBoard(IGrouping<string, string> keyVal)
+        {
+            //IList<BoardController> boardsAvail = dbGetAllBoards();
+
+            // TODO: Loop through all selections
+
+            // TODO: tryparse
+            int selection = int.Parse(argController.getKeyVal()["--cloud-get"].First());
+            selection--;
+
+            //if (boardsAvail[selection] == null)
+            //    return;
+
+            RestClient rest = new RestClient(restUrl);
+            string c = rest.post(user, "board/get/54f22eff-94d5-4d31-83ec-b1fb815e3c4a");
+            Console.WriteLine(c);
+        }
 
         #endregion
     }
