@@ -26,8 +26,8 @@ namespace clk.Resources
             ConsoleColor c = ConsoleColor.Red;
             if (color.Equals("blue"))
                 c = ConsoleColor.Blue;
-            if (color.Equals("gray"))
-                c = ConsoleColor.Gray;
+            if (color.Equals("cyan"))
+                c = ConsoleColor.Cyan;
             if (color.Equals("green"))
                 c = ConsoleColor.Green;
             if (color.Equals("yellow"))

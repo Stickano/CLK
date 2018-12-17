@@ -239,9 +239,8 @@ namespace clk
 
                     // Colors, colors everywhere!
                     if (point.isCheck)
-                        EyeCandy.color("green");
-                    else
                         EyeCandy.color("yellow");
+                    
                     
                     Console.WriteLine(EyeCandy.indent(outCountLen) + outCountP + point.name);
                     EyeCandy.reset();
@@ -717,11 +716,31 @@ namespace clk
             string cardName="")
         {
             if (!boardName.Equals(""))
-                Console.WriteLine("["+ ++argController.board +"] Board    : " + boardName);
+            {
+                Console.Write("["+ ++argController.board +"] Board    : ");
+                EyeCandy.color(); //red
+                Console.Write(boardName);
+                EyeCandy.reset();
+                Console.WriteLine();
+            }
+
             if (!listName.Equals(""))
-                Console.WriteLine("["+ ++argController.list +"] List     : " + listName);
+            {
+                Console.Write("["+ ++argController.list +"] List     : ");
+                EyeCandy.color("green"); 
+                Console.Write(listName);
+                EyeCandy.reset();
+                Console.WriteLine();
+            }
+
             if (!cardName.Equals(""))
-                Console.WriteLine("["+ ++argController.card +"] Card     : " + cardName);
+            {
+                Console.Write("["+ ++argController.card +"] Card     : ");
+                EyeCandy.color("blue");
+                Console.Write(cardName);
+                EyeCandy.reset();
+                Console.WriteLine();
+            }
             Console.WriteLine();
         }
         
