@@ -108,12 +108,6 @@ namespace clk.Controllers
                     
                     // Initialize a new argument
                     a = new Argument {key = key};
-                    
-                    // Make sure it makes it to our list, 
-                    // if the loop only runs once (1 parameter).
-                    if (args.Count() == 1)
-                        argList.Add(a);
-                    
                     continue;
                 }
 
@@ -133,12 +127,10 @@ namespace clk.Controllers
                 
                 // If NOT KEY, but VALUE, add to the Argument value List
                 a.value.Add(value);
-                
-                if (args.Count() == 2)
-                    argList.Add(a);
-                
                 br++;
             }
+            
+            argList.Add(a);
             
             // If both username and password is set,
             // add the profile argument to the list

@@ -17,10 +17,18 @@ namespace clk.Views
         {
             int br = 0;
             Console.WriteLine("Available boards:");
+
+            if (boards.Count == 0)
+            {
+                EyeCandy.color("yellow");
+                Console.WriteLine(EyeCandy.indent(6) + "[ Use --new-board to add a new board ]");
+                EyeCandy.reset();
+            }
+            
             foreach (Board board in boards)
             {
                 br++;
-                Console.WriteLine("  ["+ br +"]: " + board.name);
+                Console.WriteLine("  ["+ br +"] " + board.name);
             }
 
             Console.WriteLine();
@@ -33,12 +41,19 @@ namespace clk.Views
         public void allLists(List<List> lists)
         {
             Console.WriteLine("Available lists:");
+
+            if (lists.Count == 0)
+            {
+                EyeCandy.color("yellow");
+                Console.WriteLine(EyeCandy.indent(6) + "[ Use --new-list to add a new list ]");
+                EyeCandy.reset();
+            }
             
             int br = 0;
             foreach (List list in lists)
             {
                 br++;
-                Console.WriteLine("  ["+ br +"]: " + list.name);
+                Console.WriteLine("  ["+ br +"] " + list.name);
             }
 
             Console.WriteLine();        
@@ -51,11 +66,19 @@ namespace clk.Views
         public void allCards(List<Card> cards)
         {
             Console.WriteLine("Available cards:");
+
+            if (cards.Count == 0)
+            {
+                EyeCandy.color("yellow");
+                Console.WriteLine(EyeCandy.indent(6) + "[ Use --new-card to add a new card ]");
+                EyeCandy.reset();
+            }
+            
             int br = 0;
             foreach (Card card in cards)
             {
                 br++;
-                string cardCount = "  [" + br + "]: ";
+                string cardCount = "  [" + br + "] ";
                 int cardCountLen = cardCount.Length;
                 Console.WriteLine(cardCount + card.name);
                 if(card.description != null && !card.description.Equals(""))
@@ -71,39 +94,50 @@ namespace clk.Views
         /// <param name="card">The card to print out</param>
         public void card(Card card, CardController controller)
         {
-            Console.WriteLine(EyeCandy.indent(6) + card.description);
+            
+            if (!card.description.Equals(""))
+                Console.WriteLine(EyeCandy.indent(6) + card.description);
+            else
+            {
+                EyeCandy.color("yellow");
+                Console.WriteLine(EyeCandy.indent(6) + "[ Use --description to add a description ]");
+                EyeCandy.reset();
+            }
+            
             Console.WriteLine();
 
+            if (controller.getChecklists(card.id).Count == 0)
+            {
+                EyeCandy.color("yellow");
+                Console.WriteLine(EyeCandy.indent(6) + "[ Use --new-check to add a new checklist ]");
+                EyeCandy.reset();
+            }
+
             // Checklist section
-            //TODO: Save a parameter, print out all points as one loop (figure out how to match)
-            int chBr = 0;
-            Console.WriteLine("Checklist(s):");
+            int br = 0;
             foreach (Checklist checklist in controller.getChecklists(card.id))
             {
-                chBr++;
-                string outCount = "  [" + chBr + "]: ";
-                int outCountLen = outCount.Length;
-                Console.WriteLine(outCount + checklist.name);
+                Console.WriteLine(checklist.name);
 
                 // Checklist points
-                int pBr = 0;
                 foreach (ChecklistPoint point in controller.getChecklistPoints(checklist.id))
                 {
-                    pBr++;
-                    string outCountP = "[" + pBr + "]: ";
+                    br++;
+                    string outCountP = "[" + br + "] ";
 
                     // Colors, colors everywhere!
                     if (point.isCheck)
-                        EyeCandy.color("yellow");
+                        EyeCandy.color("green");
                     
-                    
-                    Console.WriteLine(EyeCandy.indent(outCountLen) + outCountP + point.name);
+                    Console.WriteLine(EyeCandy.indent(2) + outCountP + point.name);
                     EyeCandy.reset();
                 }
 
                 Console.WriteLine();
-                comments(controller.getComments(card.id));
             }
+
+            Console.WriteLine();
+            comments(controller.getComments(card.id));
         }
 
         /// <summary>
@@ -115,18 +149,25 @@ namespace clk.Views
         {
             int br = 0;
             Console.WriteLine();
-            Console.WriteLine("Comment(s):");
+            
+            if (comments.Count > 0)
+                Console.WriteLine("Comment(s):");
+            else
+            {
+                EyeCandy.color("yellow");
+                Console.WriteLine(EyeCandy.indent(6) + "[ Use --comment to add a new comment ]");
+                EyeCandy.reset();
+            }
+            
             foreach (Comment comment in comments)
             {
                 br++;
-                string outCount = "  [" + br + "]: ";
+                string outCount = "  [" + br + "] ";
                 int outCountLen = outCount.Length;
-                Console.WriteLine(outCount + "(" + comment.created + ")");
+                Console.WriteLine(outCount + comment.created);
                 Console.WriteLine(EyeCandy.indent(outCountLen) + comment.comment);
                 Console.WriteLine();
             }
-
-            Console.WriteLine();
         }
         
         /// <summary>
@@ -136,7 +177,10 @@ namespace clk.Views
         /// <param name="message">The error message to print out before exiting</param>
         public void error(string message)
         {
-            Console.WriteLine(message);
+            Console.WriteLine();
+            Console.Write("Error: ");
+            EyeCandy.color();
+            Console.Write(message);
             Environment.Exit(0);
         }
         
@@ -148,7 +192,7 @@ namespace clk.Views
         /// <param name="listName">The list name to print out</param>
         /// <param name="cardName">The card name to print out</param>
         /// <param name="checklistName">The checklist name to print out</param>
-        private static void commentAction(string boardName="", 
+        public static void commentAction(string boardName="", 
             string listName="", 
             string cardName="", 
             string checklistName="")
@@ -171,37 +215,39 @@ namespace clk.Views
         /// <param name="boardName"></param>
         /// <param name="listName"></param>
         /// <param name="cardName"></param>
-        private static void commentDestination(string boardName="", 
-            string listName="", 
-            string cardName="")
+        public void commentDestination()
         {
-            if (!boardName.Equals(""))
-            {
-                Console.Write("["+ ++Program.boardNum +"] Board    : ");
-                EyeCandy.color(); //red
-                Console.Write(boardName);
-                EyeCandy.reset();
-                Console.WriteLine();
-            }
-
-            if (!listName.Equals(""))
-            {
-                Console.Write("["+ ++Program.listNum +"] List     : ");
-                EyeCandy.color("green"); 
-                Console.Write(listName);
-                EyeCandy.reset();
-                Console.WriteLine();
-            }
-
-            if (!cardName.Equals(""))
-            {
-                Console.Write("["+ ++Program.cardNum +"] Card     : ");
-                EyeCandy.color("blue");
-                Console.Write(cardName);
-                EyeCandy.reset();
-                Console.WriteLine();
-            }
             Console.WriteLine();
+            if (Program.boardName != null)
+                Console.WriteLine("In location:");
+            
+            if (Program.cardName != null)
+            {
+                Console.Write("["+ ++Program.cardNum +"] ");
+                EyeCandy.color("green");
+                Console.Write(Program.cardName);
+                EyeCandy.reset();
+                Console.WriteLine();
+            }
+            
+            if (Program.listName != null)
+            {
+                Console.Write("["+ ++Program.listNum +"] ");
+                EyeCandy.color("green"); 
+                Console.Write(Program.listName);
+                EyeCandy.reset();
+                Console.WriteLine();
+            }
+
+            if (Program.boardName != null)
+            {
+                Console.Write("["+ ++Program.boardNum +"] ");
+                EyeCandy.color("green"); //red
+                Console.Write(Program.boardName);
+                EyeCandy.reset();
+                Console.WriteLine();
+            }
+            
         }
 
     }

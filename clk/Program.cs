@@ -15,7 +15,7 @@ namespace clk
     {
         private static string restUrl = "http://localhost:50066/Service1.svc/";
 
-        public static Profile user;
+        public static Profile user = new Profile();
 
         private static ArgumentController argController;
         private static OverviewController ovController;
@@ -34,14 +34,14 @@ namespace clk
         
         // When the values are matches to an index,
         // The name and id of those elements will be defined.
-        private static string boardId;
-        private static string boardName;
-        private static string listId;
-        private static string listName;
-        private static string cardId;
-        private static string cardName;
-        private static string checkId;
-        private static string checkName;
+        public static string boardId;
+        public static string boardName;
+        public static string listId;
+        public static string listName;
+        public static string cardId;
+        public static string cardName;
+        public static string checkId;
+        public static string checkName;
 
         // These confirm, that the input value
         // indeed matches an index in one of the lists
@@ -52,6 +52,10 @@ namespace clk
 
         public static void Main(string[] args)
         {
+            
+            if (!args.Any())
+                About.usage(); //TODO: continious running
+            
             // Check that we have Json files
             Json.isFiles();
             
@@ -66,21 +70,20 @@ namespace clk
                 Ascii.clkList();
             else if (argController.isBoard)
                 Ascii.clkBoard();
-            
-
 
             foreach (Argument arg in argController.argList)
             {
+                
                 if (arg.key.Equals("-h"))
                     About.usage();
                 
-                if (arg.key.Equals("-b") && !argController.isList)
+                if (arg.key.Equals("-b"))
                     getBoards(arg.value);
                 
-                if (arg.key.Equals("-l") && !argController.isCard)
+                if (arg.key.Equals("-l"))
                     getCards(arg.value);
                 
-                if (arg.key.Equals("-c") && !argController.isChecklist)
+                if (arg.key.Equals("-c")) //TODO: 
                     getCard(arg.value);
                 
                 if (arg.key.Equals("--point"))
@@ -124,8 +127,9 @@ namespace clk
                 
                 /*if (arg.key.Equals(""))
                     method(arg.value);*/
-
             }
+            
+            write.commentDestination();
         }
         
         
@@ -241,6 +245,9 @@ namespace clk
         
                 if (!isBoard)
                     write.error("The selected board was not valid.");
+                
+                if (argController.isList)
+                    break;
             
                 write.allLists(liController.getLists());
             }
@@ -254,6 +261,7 @@ namespace clk
         /// </summary>
         private static void getCards(List<string> args)
         {
+            
             foreach (string arg in args)
             {
                 
@@ -269,8 +277,11 @@ namespace clk
 
                 if (!isList)
                     write.error("The selected list was not valid.");
+                
+                if (argController.isCard)
+                    break;
             
-                write.allCards(caController.cards);   
+                write.allCards(caController.getCards());   
             }
         }
 
@@ -293,7 +304,7 @@ namespace clk
                 iniOvController();
                 iniLiController(boardId);
                 iniCaController(listId);
-            
+                
                 if (!isCard)
                     write.error("The selected card was not valid.");
             
@@ -327,7 +338,7 @@ namespace clk
                 if (!isCheck)
                     write.error("The selected checklist was not valid.");
             
-                if (!Validators.inList(caController.getChecklistPoints(checkId), val))
+                if (!Validators.inList(caController.getChecklistPoints(checkId), int.Parse(val)))
                     write.error("The selected point was not valid.");
             
             
