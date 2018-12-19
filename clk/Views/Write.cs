@@ -1,0 +1,208 @@
+using System;
+using System.Collections.Generic;
+using clk.Controllers;
+using clk.Models;
+using clk.Resources;
+
+namespace clk.Views
+{
+    public class Write
+    {
+        
+        /// <summary>
+        /// Print out all available boards (overview)
+        /// </summary>
+        /// <param name="boards">The list of all boards (overview controller</param>
+        public void allBoards(List<Board> boards)
+        {
+            int br = 0;
+            Console.WriteLine("Available boards:");
+            foreach (Board board in boards)
+            {
+                br++;
+                Console.WriteLine("  ["+ br +"]: " + board.name);
+            }
+
+            Console.WriteLine();
+        }
+
+        /// <summary>
+        /// Print out all available lists in a board
+        /// </summary>
+        /// <param name="lists">The list of lists to print out</param>
+        public void allLists(List<List> lists)
+        {
+            Console.WriteLine("Available lists:");
+            
+            int br = 0;
+            foreach (List list in lists)
+            {
+                br++;
+                Console.WriteLine("  ["+ br +"]: " + list.name);
+            }
+
+            Console.WriteLine();        
+        }
+
+        /// <summary>
+        /// Print out all available cards in a list
+        /// </summary>
+        /// <param name="cards"></param>
+        public void allCards(List<Card> cards)
+        {
+            Console.WriteLine("Available cards:");
+            int br = 0;
+            foreach (Card card in cards)
+            {
+                br++;
+                string cardCount = "  [" + br + "]: ";
+                int cardCountLen = cardCount.Length;
+                Console.WriteLine(cardCount + card.name);
+                if(card.description != null && !card.description.Equals(""))
+                    Console.WriteLine(EyeCandy.indent(cardCountLen) + card.description);
+            }
+
+            Console.WriteLine();
+        }
+
+        /// <summary>
+        /// Print out a card and its content
+        /// </summary>
+        /// <param name="card">The card to print out</param>
+        public void card(Card card, CardController controller)
+        {
+            Console.WriteLine(EyeCandy.indent(6) + card.description);
+            Console.WriteLine();
+
+            // Checklist section
+            //TODO: Save a parameter, print out all points as one loop (figure out how to match)
+            int chBr = 0;
+            Console.WriteLine("Checklist(s):");
+            foreach (Checklist checklist in controller.getChecklists(card.id))
+            {
+                chBr++;
+                string outCount = "  [" + chBr + "]: ";
+                int outCountLen = outCount.Length;
+                Console.WriteLine(outCount + checklist.name);
+
+                // Checklist points
+                int pBr = 0;
+                foreach (ChecklistPoint point in controller.getChecklistPoints(checklist.id))
+                {
+                    pBr++;
+                    string outCountP = "[" + pBr + "]: ";
+
+                    // Colors, colors everywhere!
+                    if (point.isCheck)
+                        EyeCandy.color("yellow");
+                    
+                    
+                    Console.WriteLine(EyeCandy.indent(outCountLen) + outCountP + point.name);
+                    EyeCandy.reset();
+                }
+
+                Console.WriteLine();
+                comments(controller.getComments(card.id));
+            }
+        }
+
+        /// <summary>
+        /// Print out comments.
+        /// Called from the card() method i.e.
+        /// </summary>
+        /// <param name="comments">The list of comments to print out</param>
+        public void comments(List<Comment> comments)
+        {
+            int br = 0;
+            Console.WriteLine();
+            Console.WriteLine("Comment(s):");
+            foreach (Comment comment in comments)
+            {
+                br++;
+                string outCount = "  [" + br + "]: ";
+                int outCountLen = outCount.Length;
+                Console.WriteLine(outCount + "(" + comment.created + ")");
+                Console.WriteLine(EyeCandy.indent(outCountLen) + comment.comment);
+                Console.WriteLine();
+            }
+
+            Console.WriteLine();
+        }
+        
+        /// <summary>
+        /// If an error has been encountered on the way,
+        /// send it to this method - It will print it and exit the program.
+        /// </summary>
+        /// <param name="message">The error message to print out before exiting</param>
+        public void error(string message)
+        {
+            Console.WriteLine(message);
+            Environment.Exit(0);
+        }
+        
+        /// <summary>
+        /// THis is used to print out a nice finish in the bottom of each "view".
+        /// It is called from the create methods in this document.
+        /// </summary>
+        /// <param name="boardName">The board name to print out</param>
+        /// <param name="listName">The list name to print out</param>
+        /// <param name="cardName">The card name to print out</param>
+        /// <param name="checklistName">The checklist name to print out</param>
+        private static void commentAction(string boardName="", 
+            string listName="", 
+            string cardName="", 
+            string checklistName="")
+        {
+            if (!checklistName.Equals(""))
+                Console.WriteLine("In checklist : " + checklistName.Trim());
+            if (!cardName.Equals(""))
+                Console.WriteLine("In card      : " + cardName.Trim());
+            if (!listName.Equals(""))
+                Console.WriteLine("In list      : " + listName.Trim());
+            if (!boardName.Equals(""))
+                Console.WriteLine("In board     : " + boardName.Trim());
+            Console.WriteLine();
+        }
+
+        /// <summary>
+        /// This is used to print out common information in your current location (Board, List & Card)
+        /// This is called in the get methods within this document
+        /// </summary>
+        /// <param name="boardName"></param>
+        /// <param name="listName"></param>
+        /// <param name="cardName"></param>
+        private static void commentDestination(string boardName="", 
+            string listName="", 
+            string cardName="")
+        {
+            if (!boardName.Equals(""))
+            {
+                Console.Write("["+ ++Program.boardNum +"] Board    : ");
+                EyeCandy.color(); //red
+                Console.Write(boardName);
+                EyeCandy.reset();
+                Console.WriteLine();
+            }
+
+            if (!listName.Equals(""))
+            {
+                Console.Write("["+ ++Program.listNum +"] List     : ");
+                EyeCandy.color("green"); 
+                Console.Write(listName);
+                EyeCandy.reset();
+                Console.WriteLine();
+            }
+
+            if (!cardName.Equals(""))
+            {
+                Console.Write("["+ ++Program.cardNum +"] Card     : ");
+                EyeCandy.color("blue");
+                Console.Write(cardName);
+                EyeCandy.reset();
+                Console.WriteLine();
+            }
+            Console.WriteLine();
+        }
+
+    }
+}

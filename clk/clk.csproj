@@ -68,6 +68,7 @@
     <Compile Include="Resources\Random.cs" />
     <Compile Include="Resources\Time.cs" />
     <Compile Include="Resources\Validators.cs" />
+    <Compile Include="Views\Write.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

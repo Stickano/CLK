@@ -48,22 +48,28 @@ namespace clk.Models
         }
 
         /// <summary>
-        /// Make a POST request to the RESTful interface.
+        /// Make POST and PUT request to the REST service.
+        /// The Object to POST/PUT ill be Json serialized.
         /// </summary>
-        /// <typeparam name="T">A generic object - Will be Json serialized.</typeparam>
-        /// <param name="obj">Object (will be formatted to Json) to put in POST request</param>
-        /// <param name="queryString">The URL query string (/create/some/data   ie)</param>
-        /// <returns></returns>
-        public string post<T>(T obj, string queryString)
+        /// <param name="obj">The object to POST/PUT for the server</param>
+        /// <param name="urlQuery">The servers URL query (i.e. /user/login)</param>
+        /// <param name="put">If TRUE a PUT request will be made, instead of POST</param>
+        /// <typeparam name="T">A generic object</typeparam>
+        /// <returns>The response from the REST interface</returns>
+        public string post<T>(T obj, string urlQuery, bool put = false)
         {
             
             var serializedJson = JsonConvert.SerializeObject(obj);
-            Console.WriteLine(serializedJson);
-            HttpWebRequest request = WebRequest.Create(url+queryString) as HttpWebRequest;
-            var enc = new UTF8Encoding(true);
-            var data = enc.GetBytes(serializedJson);
+            var request = WebRequest.Create(url + urlQuery) as HttpWebRequest;
+            var utf8 = new UTF8Encoding(true);
+            var data = utf8.GetBytes(serializedJson);
+            var encoding = ASCIIEncoding.ASCII;
 
-            request.Method = "POST";
+            string method = "POST";
+            if (put)
+                method = "PUT";
+            
+            request.Method = method;
             request.ContentType = "application/json";
             request.ContentLength = data.Length;
 
@@ -71,15 +77,13 @@ namespace clk.Models
             {
                 reader.Write(data, 0, data.Length);
             }
-
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            
             //WebHeaderCollection header = response.Headers;
-
-            var encoding = ASCIIEncoding.ASCII;
-            using (var reader = new StreamReader(response.GetResponseStream(), encoding))
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            using (var reader = new StreamReader(
+                                    response.GetResponseStream(), encoding))
             {
-                string responseText = reader.ReadToEnd();
-                return responseText;
+                return reader.ReadToEnd();
             }
         }
     }
