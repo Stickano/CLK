@@ -68,8 +68,13 @@ namespace clk
                 Ascii.clkCard();
             else if (argController.isList)
                 Ascii.clkList();
-            else if (argController.isBoard)
+            else if (argController.isBoard 
+                     && argController.argList.Find(x => x.key == "-b").value.Any())
                 Ascii.clkBoard();
+            else if (argController.isBoard)
+                Ascii.clkBoards();
+            else
+                Ascii.clk();
 
             // Send the merry argument on its way to its corresponding method
             foreach (Argument arg in argController.argList)
@@ -135,11 +140,11 @@ namespace clk
             
             // Write the output for the selection
             Console.WriteLine();
-            if (argController.isCard)
+            if (argController.isCard && isCard)
                 write.card(caController.cards.Find(x => x.id == cardId), caController);
-            else if (argController.isList)
+            else if (argController.isList && isList)
                 write.allCards(caController.getCards());
-            else if (argController.isBoard)
+            else if (argController.isBoard && isBoard)
                 write.allLists(liController.getLists());
             
             write.commentDestination();
@@ -358,11 +363,11 @@ namespace clk
                 iniLiController(boardId);
                 iniCaController(listId);
             
-                if (!Validators.inList(caController..getChecklistPoints(checkId), int.Parse(val)))
+                if (!Validators.inList(caController.getChecklistPointsInCard(cardId), int.Parse(val)))
                     write.error("The selected point was not valid.");
             
             
-                ChecklistPoint c = caController.getChecklistPoints(checkId)[int.Parse(val)];
+                ChecklistPoint c = caController.getChecklistPointsInCard(cardId)[int.Parse(val)];
                 caController.clickPoint(c.id);
 
                 if (c.isCheck)

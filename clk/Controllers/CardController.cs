@@ -167,9 +167,24 @@ namespace clk.Controllers
             return points.FindAll(x => x.checklistId == checklistId).ToList();
         }
 
+        /// <summary>
+        /// This will return all the points found in a card -
+        /// It will loop through all the checklists and gather those points,
+        /// and return a complete list of Points in a card.
+        /// </summary>
+        /// <param name="cardId">The ID of the card to search through.</param>
+        /// <returns>A List of ChecklistPoint associated to the card.</returns>
         public List<ChecklistPoint> getChecklistPointsInCard(string cardId)
         {
-            //TODO Get all the points associated with a card, and call this method when --point (clickPoint in Program)
+            
+            List<ChecklistPoint> cardPoints = new List<ChecklistPoint>();
+
+            foreach (Checklist cl in getChecklists(cardId))
+            {
+                cardPoints.AddRange(getChecklistPoints().FindAll(x => x.checklistId == cl.id));
+            }
+
+            return cardPoints;
         }
 
         /// <summary>

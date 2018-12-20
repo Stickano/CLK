@@ -104,13 +104,13 @@ namespace clk.Controllers
                     
                     
                     // Notice how deep we are for the "view"
-                    if (arg.Equals("-b"))
+                    if (key.Equals("-b"))
                         isBoard = true;
-                    if (arg.Equals("-l"))
+                    if (key.Equals("-l"))
                         isList = true;
-                    if (arg.Equals("-c"))
+                    if (key.Equals("-c"))
                         isCard = true;
-                    if (arg.Equals("-p"))
+                    if (key.Equals("-p"))
                         isChecklist = true;
                     
                     

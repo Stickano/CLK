@@ -89,9 +89,15 @@ namespace clk.Views
             Console.WriteLine();
         }
 
+        /// <summary>
+        /// Used to write the headline (name) of a card.
+        /// (Inside a box kinda thing).
+        /// The length of the box will match the length of the name.
+        /// </summary>
+        /// <param name="headline">The text to print inside the box</param>
         public void cardHeadline(string headline)
         {
-            int hLen = headline.Length + 3;
+            int hLen = headline.Length + 2;
             
             Console.Write(EyeCandy.indent(4) + "╔");
             for (int i = 0; i < hLen; i++)

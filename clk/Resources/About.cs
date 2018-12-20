@@ -12,7 +12,6 @@ namespace clk.Resources
         /// </summary>
         public static void usage()
         { // TODO: Should have a --help [category] kinda' approach.
-            Ascii.clk();
             Console.WriteLine("This tool is very versatile and the parameters can be combined in a number of ways.");
             Console.WriteLine("Below information is just to get you started. For more information and usage examples, visit: www.website.com");
             Console.WriteLine();

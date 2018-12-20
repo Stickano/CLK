@@ -30,6 +30,18 @@ namespace clk.Resources
         }
 
         /// <summary>
+        /// Prints out CLK.Boards in ascii characters
+        /// </summary>
+        public static void clkBoards()
+        {
+            Console.WriteLine("  ___ _    _  __  ___                   _");
+            Console.WriteLine(" / __| |  | |/ / | _ ) ___  __ _ _ _ __| |___");
+            Console.WriteLine("| (__| |__| ' < _| _ \\/ _ \\/ _` | '_/ _` (_-<");
+            Console.WriteLine(" \\___|____|_|\\_(_)___/\\___/\\__,_|_| \\__,_/__/");
+            Console.WriteLine();
+        }
+
+        /// <summary>
         /// Prints out CLK.Card in ascii characters
         /// </summary>
         public static void clkCard()
