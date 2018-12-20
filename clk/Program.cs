@@ -59,9 +59,9 @@ namespace clk
             // Check that we have Json files
             Json.isFiles();
             
+            // Controller for the arguments, and a "view" kinda object.
             write = new Write();
             argController = new ArgumentController(args);
-            
             
             // Write top logo
             if (argController.isCard)
@@ -71,6 +71,7 @@ namespace clk
             else if (argController.isBoard)
                 Ascii.clkBoard();
 
+            // Send the merry argument on its way to its corresponding method
             foreach (Argument arg in argController.argList)
             {
                 
@@ -83,8 +84,11 @@ namespace clk
                 if (arg.key.Equals("-l"))
                     getCards(arg.value);
                 
-                if (arg.key.Equals("-c")) //TODO: 
+                if (arg.key.Equals("-c")) 
                     getCard(arg.value);
+                
+                if (arg.key.Equals("-p"))
+                    setChecklist(arg.value);
                 
                 if (arg.key.Equals("--point"))
                     clickPoint(arg.value);
@@ -129,7 +133,39 @@ namespace clk
                     method(arg.value);*/
             }
             
+            // Write the output for the selection
+            Console.WriteLine();
+            if (argController.isCard)
+                write.card(caController.cards.Find(x => x.id == cardId), caController);
+            else if (argController.isList)
+                write.allCards(caController.getCards());
+            else if (argController.isBoard)
+                write.allLists(liController.getLists());
+            
             write.commentDestination();
+        }
+
+        private static void setChecklist(List<string> args)
+        {
+            if (!args.Any())
+                return;
+
+            if (!Validators.isInt(args.FirstOrDefault()))
+                return;
+            
+            if (args.Count != 1)
+                write.error("You can only work on 1 checklist at the time.");
+
+            checkNum = int.Parse(args.FirstOrDefault());
+
+            iniOvController();
+            iniLiController(boardId);
+            iniCaController(listId);
+            
+            if (!isCheck)
+                write.error("The selected checklist was not valid.");
+            
+            
         }
         
         
@@ -245,11 +281,6 @@ namespace clk
         
                 if (!isBoard)
                     write.error("The selected board was not valid.");
-                
-                if (argController.isList)
-                    break;
-            
-                write.allLists(liController.getLists());
             }
         }
 
@@ -276,12 +307,7 @@ namespace clk
                 iniCaController(listId);
 
                 if (!isList)
-                    write.error("The selected list was not valid.");
-                
-                if (argController.isCard)
-                    break;
-            
-                write.allCards(caController.getCards());   
+                    write.error("The selected list was not valid.");   
             }
         }
 
@@ -307,9 +333,6 @@ namespace clk
                 
                 if (!isCard)
                     write.error("The selected card was not valid.");
-            
-                Card c = caController.getCards().Find(x => x.id == cardId);
-                write.card(c, caController);   
             }
         }
         
@@ -335,10 +358,7 @@ namespace clk
                 iniLiController(boardId);
                 iniCaController(listId);
             
-                if (!isCheck)
-                    write.error("The selected checklist was not valid.");
-            
-                if (!Validators.inList(caController.getChecklistPoints(checkId), int.Parse(val)))
+                if (!Validators.inList(caController..getChecklistPoints(checkId), int.Parse(val)))
                     write.error("The selected point was not valid.");
             
             
@@ -441,6 +461,9 @@ namespace clk
         /// <param name="keyVal">The KeyVal args from ToLookup</param>
         private static void createDescription(List<string> args)
         {
+            if (!args.Any())
+                return;
+            
             // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
             iniLiController(boardId);
@@ -450,6 +473,7 @@ namespace clk
                 write.error("The selected card was not valid.");
             
             caController.createDescription(args.FirstOrDefault(), cardId);
+            Console.WriteLine("Created description: " + args.FirstOrDefault());
         }
 
         /// <summary>
@@ -506,7 +530,7 @@ namespace clk
                 caController.createChecklist(val, cardId);
                 Console.WriteLine("Created checklist: " + val);
 
-                checkNum = caController.checklists.Count - 1;
+                checkNum = caController.getChecklists(cardId).Count - 1;
             }
         }
 

@@ -11,7 +11,7 @@ namespace clk.Resources
         /// exit and no further actions will be performed.
         /// </summary>
         public static void usage()
-        {
+        { // TODO: Should have a --help [category] kinda' approach.
             Ascii.clk();
             Console.WriteLine("This tool is very versatile and the parameters can be combined in a number of ways.");
             Console.WriteLine("Below information is just to get you started. For more information and usage examples, visit: www.website.com");
@@ -22,7 +22,7 @@ namespace clk.Resources
             Console.WriteLine("-b --board     Select board");
             Console.WriteLine("-l --list      Select list");
             Console.WriteLine("-c --card      Select card");
-            Console.WriteLine("-p --check     Select (Points) checklist");
+            //Console.WriteLine("-p --check     Select (Points) checklist");
             Console.WriteLine();
             Console.WriteLine("--new-board    Create a new board");
             Console.WriteLine("--new-list     Create a new list");

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using clk.Controllers;
 using clk.Models;
 using clk.Resources;
@@ -88,12 +89,41 @@ namespace clk.Views
             Console.WriteLine();
         }
 
+        public void cardHeadline(string headline)
+        {
+            int hLen = headline.Length + 3;
+            
+            Console.Write(EyeCandy.indent(4) + "╔");
+            for (int i = 0; i < hLen; i++)
+            {
+                Console.Write("═");
+            }
+            Console.Write("╗");
+
+            Console.WriteLine();
+            EyeCandy.color("yellow");
+            Console.Write(EyeCandy.indent(6) + headline);
+            EyeCandy.reset();
+
+            Console.WriteLine();
+            Console.Write(EyeCandy.indent(4) + "╚");
+            for (int i = 0; i < hLen; i++)
+            {
+                Console.Write("═");
+            }
+            Console.Write("╝");
+            Console.WriteLine();
+        }
+
         /// <summary>
         /// Print out a card and its content
         /// </summary>
         /// <param name="card">The card to print out</param>
         public void card(Card card, CardController controller)
         {
+            
+            cardHeadline(card.name);
+            Console.WriteLine();
             
             if (!card.description.Equals(""))
                 Console.WriteLine(EyeCandy.indent(6) + card.description);
@@ -105,6 +135,7 @@ namespace clk.Views
             }
             
             Console.WriteLine();
+            Console.WriteLine();
 
             if (controller.getChecklists(card.id).Count == 0)
             {
@@ -115,9 +146,18 @@ namespace clk.Views
 
             // Checklist section
             int br = 0;
+            int brChk = 0;
             foreach (Checklist checklist in controller.getChecklists(card.id))
             {
-                Console.WriteLine(checklist.name);
+                brChk++;
+                Console.WriteLine("["+brChk+"] "+checklist.name);
+
+                if (!controller.getChecklistPoints(checklist.id).Any())
+                {
+                    EyeCandy.color("yellow");
+                    Console.WriteLine(EyeCandy.indent(6) + "[ Use --new-point to add a new checklist point ]");
+                    EyeCandy.reset();
+                }
 
                 // Checklist points
                 foreach (ChecklistPoint point in controller.getChecklistPoints(checklist.id))

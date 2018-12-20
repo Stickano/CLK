@@ -167,6 +167,11 @@ namespace clk.Controllers
             return points.FindAll(x => x.checklistId == checklistId).ToList();
         }
 
+        public List<ChecklistPoint> getChecklistPointsInCard(string cardId)
+        {
+            //TODO Get all the points associated with a card, and call this method when --point (clickPoint in Program)
+        }
+
         /// <summary>
         /// This will check/uncheck a point in a checklist.
         /// </summary>

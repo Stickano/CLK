@@ -15,6 +15,7 @@ namespace clk.Controllers
         public bool isList { get; set; }
         public bool isCard { get; set; }
         public bool isChecklist { get; set; }
+        public bool isNew { get; set; }
 
         public ArgumentController(string[] args)
         {
@@ -24,6 +25,7 @@ namespace clk.Controllers
             isList = false;
             isCard = false;
             isChecklist = false;
+            isNew = false;
             
             sortArgs(args);
         }
@@ -68,6 +70,12 @@ namespace clk.Controllers
                     Program.user.password = pw;
                     continue;
                 }
+                
+                // If the --new keyword is used, note it
+                if (arg.Length >= 6 && arg.Substring(0, 6).Equals("--new-")
+                    || arg.Equals("--comment") || arg.Equals("--description"))
+                    isNew = true;
+                
 
                 // If KEY in argument
                 if (arg.Substring(0, 1).Equals("-"))
