@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ConstrainedExecution;
 using clk.Models;
 using clk.Resources;
 
@@ -129,7 +130,7 @@ namespace clk.Controllers
         /// <returns>List of Card, only for specific list (id)</returns>
         public List<Card> getCards()
         {
-            var cardCriteria = from l in cards where l.listId == listId select l;
+            var cardCriteria = from l in cards where l.listId == listId where l.active == true select l;
             List<Card> sortedLists = cardCriteria.ToList();
             return sortedLists;
         }
@@ -141,7 +142,7 @@ namespace clk.Controllers
         /// <returns>List of Comment</returns>
         public List<Comment> getComments(string cardId)
         {
-            return comments.FindAll(x => x.cardId == cardId).Where(x => x.active).ToList();
+            return comments.FindAll(x => x.cardId == cardId).Where(x => x.active == true).ToList();
         }
 
         /// <summary>
@@ -151,7 +152,7 @@ namespace clk.Controllers
         /// <returns>List of Checklist</returns>
         public List<Checklist> getChecklists(string cardId)
         {
-            return checklists.FindAll(x => x.cardId == cardId).Where(x => x.active).ToList();
+            return checklists.FindAll(x => x.cardId == cardId).Where(x => x.active == true).ToList();
         }
 
         /// <summary>
@@ -164,7 +165,7 @@ namespace clk.Controllers
             if (checklistId.Equals(""))
                 return points;
             
-            return points.FindAll(x => x.checklistId == checklistId).Where(x => x.active).ToList();
+            return points.FindAll(x => x.checklistId == checklistId).Where(x => x.active == true).ToList();
         }
 
         /// <summary>
@@ -181,8 +182,8 @@ namespace clk.Controllers
 
             foreach (Checklist cl in getChecklists(cardId))
             {
-                if (cl.active)
-                    cardPoints.AddRange(getChecklistPoints().FindAll(x => x.checklistId == cl.id));
+                if (cl.active == true || cl.active == null)
+                    cardPoints.AddRange(getChecklistPoints().FindAll(x => x.checklistId == cl.id && x.active == true));
             }
 
             return cardPoints;

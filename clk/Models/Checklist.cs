@@ -6,14 +6,15 @@ namespace clk.Models
         public string name { get; set; }
         public string cardId { get;  }
         public string created { get;  }
-        public bool active { get; set; }
+        public bool? active { get; set; }
 
-        public Checklist(string id, string name, string cardId, string created)
+        public Checklist(string id, string name, string cardId, string created, bool active = true)
         {
             this.id = id;
             this.name = name;
             this.cardId = cardId;
             this.created = created;
+            this.active = active;
         }
 
         public override string ToString()

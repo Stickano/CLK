@@ -13,7 +13,7 @@ namespace clk.Models
         public string name { get; set; }
         public string created { get;}
         public string listId { get; }
-        public bool active { get; set; }
+        public bool? active { get; set; }
 
         // Set/get an color for the card
         public Label label
@@ -37,13 +37,14 @@ namespace clk.Models
         /// <param name="name">The name of the card</param>
         /// <param name="created">Timestamp on creation</param>
         /// <param name="listId">The ID of the list,that this card resides in.</param>
-        public Card(string id, string name, string created, string listId)
+        public Card(string id, string name, string created, string listId, bool active = true)
         {
             this.id = id;
             this.name = name;
             this.created = created;
             this.listId = listId;
             _description = "";
+            this.active = active;
         }
 
         public override string ToString()

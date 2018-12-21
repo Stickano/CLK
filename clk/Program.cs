@@ -240,13 +240,13 @@ namespace clk
         /// <returns>True/false if selected yes (or empty)</returns>
         private static bool confirm()
         {
-            Console.WriteLine();
             Console.Write("Yes/no: ");
             string answer = Console.ReadLine();
-            if (!answer.Substring(0, 1).ToLower().Equals("y")
-                || !answer.Equals(""))
-                return false;
-            return true;
+            Console.WriteLine();
+            if (answer.Equals("")
+                || answer.Substring(0, 1).ToLower().Equals("y"))
+                return true;
+            return false;
         }
 
 
@@ -395,18 +395,19 @@ namespace clk
             if (!isCard)
                 write.error("The selected card was not valid.");
             
-            if (!isCheck)
+            /*if (!isCheck)
                 write.error("The selected checklist was not valid.");
-            
+            */
+
             foreach (var val in args)
             {
                 if (!Validators.isInt(val))
                     continue;
                 
-                if (!Validators.inList(caController.getChecklistPoints(checkId), int.Parse(val)))
+                if (!Validators.inList(caController.getChecklistPointsInCard(cardId), int.Parse(val)))
                     write.error("The selected checklist point was not valid.");
 
-                ChecklistPoint p = caController.getChecklistPoints(checkId)[int.Parse(val)];
+                ChecklistPoint p = caController.getChecklistPointsInCard(cardId)[int.Parse(val)];
                 string name = p.name;
                 
                 if (!confirmDelete(name))
@@ -810,6 +811,9 @@ namespace clk
                 // Set a new boardNum val for the latest element
                 boardNum = ovController.getBoards().Count - 1;
             }
+
+            argController.isBoard = true;
+            iniOvController();
         }
 
         /// <summary>
@@ -839,6 +843,10 @@ namespace clk
 
                 listNum = liController.getLists().Count - 1;
             }
+
+            argController.isList = true;
+            iniLiController(boardId);
+
         }
 
         /// <summary>
@@ -865,6 +873,9 @@ namespace clk
 
                 cardNum = caController.getCards().Count - 1;
             }
+
+            argController.isCard = true;
+            iniCaController(listId);
         }
 
         /// <summary>

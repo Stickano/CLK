@@ -19,7 +19,7 @@ namespace clk.Controllers
         public OverviewController()
         {
             json = new Json(jsonFile);
-            boards = json.readFile<Board>();
+            boards = json.readFile<Board>().Where(x => x.active).ToList();
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace clk.Controllers
         /// <returns>A List of Board</returns>
         public List<Board> getBoards()
         {
-            return boards.FindAll(x => x.active);
+            return boards.Where(x => x.active).ToList();
         }
 
         /// <summary>

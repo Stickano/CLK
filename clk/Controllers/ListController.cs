@@ -16,7 +16,7 @@ namespace clk.Controllers
         {
             this.boardId = boardId;
             json = new Json(jsonFile);
-            lists = json.readFile<List>();
+            lists = json.readFile<List>().Where(x => x.active == true).ToList();
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace clk.Controllers
         {
             var boardCriteria = from l in lists where l.boardId == boardId select l;
             List<List> sortedLists = boardCriteria.ToList();
-            return sortedLists;
+            return sortedLists.Where(x => x.active == true).ToList();
         }
 
         /// <summary>
