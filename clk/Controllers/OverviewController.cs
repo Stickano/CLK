@@ -8,14 +8,27 @@ namespace clk.Controllers
 {
     public class OverviewController
     {
-        public List<Board> boards { get; }
+        private List<Board> boards;
         private string jsonFile = "boards.json";
         private Json json;
 
+        /// <summary>
+        /// Constructor.
+        /// Reads all the boards and initialises a json model
+        /// </summary>
         public OverviewController()
         {
             json = new Json(jsonFile);
             boards = json.readFile<Board>();
+        }
+
+        /// <summary>
+        /// This will return all the active boards.
+        /// </summary>
+        /// <returns>A List of Board</returns>
+        public List<Board> getBoards()
+        {
+            return boards.FindAll(x => x.active);
         }
 
         /// <summary>
@@ -45,6 +58,16 @@ namespace clk.Controllers
         public void updateBoard(string boardName, string boardId)
         {
             boards.Find(x => x.id == boardId).name = boardName;
+            json.writeFile(boards);
+        }
+
+        /// <summary>
+        /// This will set a board to inactive (delete)
+        /// </summary>
+        /// <param name="boardId">The ID of the board to archive.</param>
+        public void deleteBoard(string boardId)
+        {
+            boards.Find(x => x.id == boardId).active = false;
             json.writeFile(boards);
         }
     }

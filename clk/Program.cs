@@ -142,6 +142,23 @@ namespace clk
                 if (arg.key.Equals("--edit"))
                     edit(arg.value);
                 
+                if (arg.key.Equals("--del-board"))
+                    deleteBoard(arg.value);
+                
+                if (arg.key.Equals("--del-list"))
+                    deleteList(arg.value);
+                
+                if (arg.key.Equals("--del-card"))
+                    deleteCard(arg.value);
+                
+                if (arg.key.Equals("--del-check"))
+                    deleteChecklist(arg.value);
+                
+                if (arg.key.Equals("--del-point"))
+                    deletePoint(arg.value);
+                
+                if (arg.key.Equals("--del-comment"))
+                    deleteComment(arg.value);
                 
                 
                 /*if (arg.key.Equals(""))
@@ -189,7 +206,254 @@ namespace clk
             
         }
 
+        
+        /// <summary>
+        /// If a user wants to update an element,
+        /// first run this, display info and ask to confirm.
+        /// </summary>
+        /// <param name="from">The name to change from</param>
+        /// <param name="to">The name to change to</param>
+        /// <returns>True/False if the user selected yes (or empty)</returns>
+        private static bool confirmUpdate(string from, string to)
+        {
+            Console.WriteLine("Change: " + from);
+            Console.WriteLine("To: " + to + "?");
 
+            return confirm();
+        }
+
+        /// <summary>
+        /// When deleting, this will display info, then confirm.
+        /// </summary>
+        /// <param name="name">The name of the item you're about to delete.</param>
+        /// <returns>True/false if user selected yas or no</returns>
+        private static bool confirmDelete(string name)
+        {
+            Console.WriteLine("Delete: " + name + "?");
+            return confirm();
+        }
+
+        /// <summary>
+        /// This will ask a yes/no question,
+        /// and return true/false if yes or no.
+        /// </summary>
+        /// <returns>True/false if selected yes (or empty)</returns>
+        private static bool confirm()
+        {
+            Console.WriteLine();
+            Console.Write("Yes/no: ");
+            string answer = Console.ReadLine();
+            if (!answer.Substring(0, 1).ToLower().Equals("y")
+                || !answer.Equals(""))
+                return false;
+            return true;
+        }
+
+
+        #region Delete methods for Board, lists, checklists, points and comments
+        
+        /// <summary>
+        /// If --del-board is incl. this is run.
+        /// It will set a board to inactive (delete)
+        /// </summary>
+        /// <param name="args">User inputs</param>
+        private static void deleteBoard(List<string> args)
+        {
+            // Initialize controllers and validate that the user-inputs are available in their respectful lists
+            iniOvController();
+            
+            foreach (var val in args)
+            {
+                if (!Validators.isInt(val))
+                    continue;
+                
+                if (!Validators.inList(ovController.getBoards(), int.Parse(val)))
+                    write.error("The selected board was not valid.");
+
+                Board b = ovController.getBoards()[int.Parse(val)];
+                string name = b.name;
+
+                if (!confirmDelete(name))
+                    return;
+                
+                ovController.deleteBoard(b.id);
+                Console.WriteLine("Deleted list: " + name);
+            }
+        }
+
+        /// <summary>
+        /// If --del-list is incl. this is run.
+        /// It will set a list to inactive (delete)
+        /// </summary>
+        /// <param name="args">User input</param>
+        private static void deleteList(List<string> args)
+        {
+            // Initialize controllers and validate that the user-inputs are available in their respectful lists
+            iniOvController();
+            
+            if (!isBoard)
+                write.error("The selected board was not valid.");
+            
+            foreach (var val in args)
+            {
+                if (!Validators.isInt(val))
+                    continue;
+                
+                if (!Validators.inList(liController.getLists(), int.Parse(val)))
+                    write.error("The selected list was not valid.");
+
+                List l = liController.getLists()[int.Parse(val)];
+                string name = l.name;
+                
+                if (!confirmDelete(name))
+                    return;
+                
+                liController.deleteList(l.id);
+                Console.WriteLine("Deleted list: " + name);
+            }
+        }
+
+        /// <summary>
+        /// If --del-card is incl. this will run.
+        /// It will set a card to inactive (delete)
+        /// </summary>
+        /// <param name="args">User input</param>
+        private static void deleteCard(List<string> args)
+        {
+            // Initialize controllers and validate that the user-inputs are available in their respectful lists
+            iniOvController();
+            iniLiController(boardId);
+            
+            if (!isList)
+                write.error("The selected list was not valid.");
+            
+            foreach (var val in args)
+            {
+                if (!Validators.isInt(val))
+                    continue;
+                
+                if (!Validators.inList(caController.getCards(), int.Parse(val)))
+                    write.error("The selected card was not valid.");
+
+                Card c = caController.getCards()[int.Parse(val)];
+                string name = c.name;
+                
+                if (!confirmDelete(name))
+                    return;
+                
+                caController.deleteCard(c.id);
+                Console.WriteLine("Deleted card: " + name);
+            }
+        }
+
+        /// <summary>
+        /// If --del-check is incl. this wil run
+        /// It will set a checklist to inactive (delete)
+        /// </summary>
+        /// <param name="args">Uset input</param>
+        private static void deleteChecklist(List<string> args)
+        {
+            // Initialize controllers and validate that the user-inputs are available in their respectful lists
+            iniOvController();
+            iniLiController(boardId);
+            iniCaController(listId);
+            
+            if (!isCard)
+                write.error("The selected card was not valid.");
+            
+            foreach (var val in args)
+            {
+                if (!Validators.isInt(val))
+                    continue;
+                
+                if (!Validators.inList(caController.getChecklists(cardId), int.Parse(val)))
+                    write.error("The selected checklist was not valid.");
+
+                Checklist c = caController.getChecklists(cardId)[int.Parse(val)];
+                string name = c.name;
+                
+                if (!confirmDelete(name))
+                    return;
+                
+                caController.deleteChecklist(c.id);
+                Console.WriteLine("Deleted checklist: " + name);
+            }
+        }
+
+        /// <summary>
+        /// If --del-point is incl. this will run.
+        /// It will set a checklist to inactive (delete)
+        /// </summary>
+        /// <param name="args">User input</param>
+        private static void deletePoint(List<string> args)
+        {
+            // Initialize controllers and validate that the user-inputs are available in their respectful lists
+            iniOvController();
+            iniLiController(boardId);
+            iniCaController(listId);
+            
+            if (!isCard)
+                write.error("The selected card was not valid.");
+            
+            if (!isCheck)
+                write.error("The selected checklist was not valid.");
+            
+            foreach (var val in args)
+            {
+                if (!Validators.isInt(val))
+                    continue;
+                
+                if (!Validators.inList(caController.getChecklistPoints(checkId), int.Parse(val)))
+                    write.error("The selected checklist point was not valid.");
+
+                ChecklistPoint p = caController.getChecklistPoints(checkId)[int.Parse(val)];
+                string name = p.name;
+                
+                if (!confirmDelete(name))
+                    return;
+                
+                caController.deletePoint(p.id);
+                Console.WriteLine("Deleted point: " + name);
+            }
+        }
+
+        /// <summary>
+        /// If --del-comment is incl. this will run.
+        /// It will set a comment to inactive (delete)
+        /// </summary>
+        /// <param name="args">User input</param>
+        private static void deleteComment(List<string> args)
+        {
+            // Initialize controllers and validate that the user-inputs are available in their respectful lists
+            iniOvController();
+            iniLiController(boardId);
+            iniCaController(listId);
+            
+            if (!isCard)
+                write.error("The selected card was not valid.");
+            
+            foreach (var val in args)
+            {
+                if (!Validators.isInt(val))
+                    continue;
+                
+                if (!Validators.inList(caController.getComments(cardId), int.Parse(val)))
+                    write.error("The selected comment was not valid.");
+
+                Comment c = caController.getComments(cardId)[int.Parse(val)];
+                string date = c.created;
+                
+                if (!confirmDelete(date))
+                    return;
+                
+                caController.deleteComment(c.id);
+                Console.WriteLine("Deleted comment, created on: " + date);
+            }
+        }
+
+        #endregion
+        
+        
         #region Update methods for Board, List, Card and Checklist (missing point atm)
        
         
@@ -286,16 +550,9 @@ namespace clk
         /// <param name="name">The new name</param>
         private static void editBoard(string name)
         {
-            Board b = ovController.boards.Find(x => x.id == boardId);
-            Console.WriteLine("Are you sure you want to change the name of board: " + b.name);
-            Console.WriteLine("To: " + name + "?");
-            Console.WriteLine();
-            
-            // Confirm with the user, that the update is wanted
-            Console.Write("Yes/no: ");
-            string answer = Console.ReadLine();
-            if (!answer.Substring(0, 1).ToLower().Equals("y")
-                || !answer.Equals(""))
+            Board b = ovController.getBoards().Find(x => x.id == boardId);
+
+            if (!confirmUpdate(b.name, name))
                 return;
 
             boardName = name;
@@ -311,15 +568,8 @@ namespace clk
         private static void editList(string name)
         {
             List l = liController.lists.Find(x => x.id == listId);
-            Console.WriteLine("Are you sure you want to change the name of list: " + l.name);
-            Console.WriteLine("To: " + name + "?");
-            Console.WriteLine();
             
-            // Confirm with the user, that the update is wanted
-            Console.Write("Yes/no: ");
-            string answer = Console.ReadLine();
-            if (!answer.Substring(0, 1).ToLower().Equals("y")
-                || !answer.Equals(""))
+            if (!confirmUpdate(l.name, name))
                 return;
             
             listName = name;
@@ -335,15 +585,8 @@ namespace clk
         private static void editCard(string name)
         {
             Card c = caController.cards.Find(x => x.id == cardId);
-            Console.WriteLine("Are you sure you want to change the name of card: " + c.name);
-            Console.WriteLine("To: " + name + "?");
-            Console.WriteLine();
             
-            // Confirm with the user, that the update is wanted
-            Console.Write("Yes/no: ");
-            string answer = Console.ReadLine();
-            if (!answer.Substring(0, 1).ToLower().Equals("y")
-                || !answer.Equals(""))
+            if (!confirmUpdate(c.name, name))
                 return;
 
             cardName = name;
@@ -359,15 +602,8 @@ namespace clk
         private static void editChecklist(string name)
         {
             Checklist c = caController.checklists.Find(x => x.id == checkId);
-            Console.WriteLine("Are you sure you want to change the name of checklist: " + c.name);
-            Console.WriteLine("To: " + name + "?");
-            Console.WriteLine();
             
-            // Confirm with the user, that the update is wanted
-            Console.Write("Yes/no: ");
-            string answer = Console.ReadLine();
-            if (!answer.Substring(0, 1).ToLower().Equals("y")
-                || !answer.Equals(""))
+            if (!confirmUpdate(c.name, name))
                 return;
 
             checkName = name;
@@ -390,11 +626,11 @@ namespace clk
         {
             ovController = new OverviewController();
             isBoard = false;
-            if (boardNum >= 0 && Validators.inList(ovController.boards, boardNum))
+            if (boardNum >= 0 && Validators.inList(ovController.getBoards(), boardNum))
             {
                 isBoard = true;
-                boardId = ObjectValues.getValueFromList(ovController.boards, boardNum, "id");
-                boardName = ObjectValues.getValueFromList(ovController.boards, boardNum, "name");    
+                boardId = ObjectValues.getValueFromList(ovController.getBoards(), boardNum, "id");
+                boardName = ObjectValues.getValueFromList(ovController.getBoards(), boardNum, "name");    
             }
         }
 
@@ -461,7 +697,7 @@ namespace clk
             iniOvController();
             
             if (args.Count == 0)
-                write.allBoards(ovController.boards);
+                write.allBoards(ovController.getBoards());
             else if (args.Count == 1)
                 getLists(args);
             else // TODO: Why you no work?!?!?
@@ -572,7 +808,7 @@ namespace clk
                 Console.WriteLine("Created board: " + val);
                 
                 // Set a new boardNum val for the latest element
-                boardNum = ovController.boards.Count - 1;
+                boardNum = ovController.getBoards().Count - 1;
             }
         }
 
@@ -842,7 +1078,6 @@ namespace clk
         }
 
         #endregion
-        
-        
+           
     }
 }

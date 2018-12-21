@@ -56,5 +56,15 @@ namespace clk.Controllers
             lists.Find(x => x.id == listId).name = name;
             json.writeFile(lists);
         }
+
+        /// <summary>
+        /// The will delete (set inactive) a list.
+        /// </summary>
+        /// <param name="listId">The ID of the list to archive.</param>
+        public void deleteList(string listId)
+        {
+            lists.Find(x => x.id == listId).active = false;
+            json.writeFile(lists);
+        }
     }
 }

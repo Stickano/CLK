@@ -123,13 +123,19 @@ namespace clk.Controllers
                 string value = arg;
                 
                 // Correct for List indexing
-                if (a.key.Equals("-b")
+                if (   a.key.Equals("-b")
                     || a.key.Equals("-l")
                     || a.key.Equals("-c")
                     || a.key.Equals("-p")
                     || a.key.Equals("--point")
                     || a.key.Equals("--cloud-save")
                     || a.key.Equals("--cloud-get")
+                    || a.key.Equals("--del-board")
+                    || a.key.Equals("--del-list")
+                    || a.key.Equals("--del-card")
+                    || a.key.Equals("--del-check")
+                    || a.key.Equals("--del-point")
+                    || a.key.Equals("--del-comment")
                     && Validators.isInt(arg))
                     value = indexValue(int.Parse(arg));
                 

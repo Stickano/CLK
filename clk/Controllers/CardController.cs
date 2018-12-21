@@ -141,7 +141,7 @@ namespace clk.Controllers
         /// <returns>List of Comment</returns>
         public List<Comment> getComments(string cardId)
         {
-            return comments.FindAll(x => x.cardId == cardId).ToList();
+            return comments.FindAll(x => x.cardId == cardId).Where(x => x.active).ToList();
         }
 
         /// <summary>
@@ -151,7 +151,7 @@ namespace clk.Controllers
         /// <returns>List of Checklist</returns>
         public List<Checklist> getChecklists(string cardId)
         {
-            return checklists.FindAll(x => x.cardId == cardId).ToList();
+            return checklists.FindAll(x => x.cardId == cardId).Where(x => x.active).ToList();
         }
 
         /// <summary>
@@ -164,7 +164,7 @@ namespace clk.Controllers
             if (checklistId.Equals(""))
                 return points;
             
-            return points.FindAll(x => x.checklistId == checklistId).ToList();
+            return points.FindAll(x => x.checklistId == checklistId).Where(x => x.active).ToList();
         }
 
         /// <summary>
@@ -181,7 +181,8 @@ namespace clk.Controllers
 
             foreach (Checklist cl in getChecklists(cardId))
             {
-                cardPoints.AddRange(getChecklistPoints().FindAll(x => x.checklistId == cl.id));
+                if (cl.active)
+                    cardPoints.AddRange(getChecklistPoints().FindAll(x => x.checklistId == cl.id));
             }
 
             return cardPoints;
@@ -230,6 +231,46 @@ namespace clk.Controllers
         {
             checklists.Find(x => x.id == checklistId).name = name;
             checklistJson.writeFile(checklists);
+        }
+
+        /// <summary>
+        /// Set a comment to inactive (delete).
+        /// </summary>
+        /// <param name="commentId">The ID of the comment to archive</param>
+        public void deleteComment(string commentId)
+        {
+            comments.Find(x => x.id == commentId).active = false;
+            commentJson.writeFile(comments);
+        }
+
+        /// <summary>
+        /// Set a checklist to inactive.
+        /// </summary>
+        /// <param name="checkId">The ID of the checklist to archive</param>
+        public void deleteChecklist(string checkId)
+        {
+            checklists.Find(x => x.id == checkId).active = false;
+            checklistJson.writeFile(checklists);
+        }
+
+        /// <summary>
+        /// Set a card to inactive (delete)
+        /// </summary>
+        /// <param name="cardId">The ID of the card to archive.</param>
+        public void deleteCard(string cardId)
+        {
+            cards.Find(x => x.id == cardId).active = false;
+            cardJson.writeFile(cards);
+        }
+
+        /// <summary>
+        /// Set a checklist point to inactive 
+        /// </summary>
+        /// <param name="pointId">The ID of the checklist point to archive.</param>
+        public void deletePoint(string pointId)
+        {
+            points.Find(x => x.id == pointId).active = false;
+            pointJson.writeFile(points);
         }
     }
 }
