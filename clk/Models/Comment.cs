@@ -6,5 +6,6 @@ namespace clk.Models
         public string cardId { get; set; }
         public string id { get; set; }
         public string created { get; set; }
+        public bool active { get; set; }
     }
 }

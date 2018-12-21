@@ -35,5 +35,17 @@ namespace clk.Controllers
 
             return id;
         }
+
+        /// <summary>
+        /// Since the only thing you're able to change on a board
+        /// is the name, just the name and the board ID is needed.
+        /// </summary>
+        /// <param name="boardName">The new name of the board</param>
+        /// <param name="boardId">The ID of the board, to change the name of</param>
+        public void updateBoard(string boardName, string boardId)
+        {
+            boards.Find(x => x.id == boardId).name = boardName;
+            json.writeFile(boards);
+        }
     }
 }

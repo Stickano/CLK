@@ -5,9 +5,10 @@ namespace clk.Models
     public class List
     {
         public string id { get; }
-        public string name { get; }
+        public string name { get; set; }
         public string boardId { get; }
-        public string created { get; }    
+        public string created { get; }
+        public bool active { get; set; }
 
         public List(string id, string name, string boardId, string created)
         {

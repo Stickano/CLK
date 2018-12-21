@@ -45,5 +45,16 @@ namespace clk.Controllers
             List<List> sortedLists = boardCriteria.ToList();
             return sortedLists;
         }
+
+        /// <summary>
+        /// This will update the name of a list.
+        /// </summary>
+        /// <param name="name">The new name of the list.</param>
+        /// <param name="listId">The ID of the list to update</param>
+        public void updateList(string name, string listId)
+        {
+            lists.Find(x => x.id == listId).name = name;
+            json.writeFile(lists);
+        }
     }
 }

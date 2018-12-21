@@ -7,6 +7,7 @@ namespace clk.Models
         public string checklistId { get; }
         public string created { get; }
         public bool isCheck { get; set; }
+        public bool active { get; set; }
 
         public ChecklistPoint(string name, string id, string checklistId, string created, bool isCheck=false)
         {

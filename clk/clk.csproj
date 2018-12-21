@@ -56,6 +56,7 @@
     <Compile Include="Models\ChecklistPoint.cs" />
     <Compile Include="Models\Comment.cs" />
     <Compile Include="Models\Json.cs" />
+    <Compile Include="Models\Label.cs" />
     <Compile Include="Models\List.cs" />
     <Compile Include="Models\Profile.cs" />
     <Compile Include="Models\RestClient.cs" />

@@ -3,9 +3,10 @@ namespace clk.Models
     public class Checklist
     {
         public string id { get; }
-        public string name { get; }
+        public string name { get; set; }
         public string cardId { get;  }
         public string created { get;  }
+        public bool active { get; set; }
 
         public Checklist(string id, string name, string cardId, string created)
         {

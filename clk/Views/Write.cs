@@ -78,10 +78,19 @@ namespace clk.Views
             int br = 0;
             foreach (Card card in cards)
             {
+                
                 br++;
                 string cardCount = "  [" + br + "] ";
                 int cardCountLen = cardCount.Length;
-                Console.WriteLine(cardCount + card.name);
+
+                Console.Write(cardCount);
+                
+                if (card.label != null)
+                    EyeCandy.color(card.label.label);
+                
+                Console.WriteLine(card.name);
+                EyeCandy.reset();
+
                 if(card.description != null && !card.description.Equals(""))
                     Console.WriteLine(EyeCandy.indent(cardCountLen) + card.description);
             }

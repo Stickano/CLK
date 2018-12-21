@@ -198,5 +198,38 @@ namespace clk.Controllers
             
             pointJson.writeFile(points);
         }
+
+        /// <summary>
+        /// Update a label for a card.
+        /// </summary>
+        /// <param name="cardId">The ID of the card to update label</param>
+        /// <param name="label">The label value</param>
+        public void updateLabel(string cardId, Label label)
+        {
+            cards.Find(x => x.id == cardId).label = label;
+            cardJson.writeFile(cards);
+        }
+
+        /// <summary>
+        /// This will update the name of a card.
+        /// </summary>
+        /// <param name="name">The new name of the card</param>
+        /// <param name="cardId">The ID of the card, to change the name for</param>
+        public void updateCard(string name, string cardId)
+        {
+            cards.Find(x => x.id == cardId).name = name;
+            cardJson.writeFile(cards);
+        }
+
+        /// <summary>
+        /// This will update the name of a checklist.
+        /// </summary>
+        /// <param name="name">The new name of the checklist</param>
+        /// <param name="checklistId">The ID of the checklist to change the name of</param>
+        public void updateChecklist(string name, string checklistId)
+        {
+            checklists.Find(x => x.id == checklistId).name = name;
+            checklistJson.writeFile(checklists);
+        }
     }
 }

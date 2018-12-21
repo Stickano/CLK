@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ConstrainedExecution;
 using System.Security.Cryptography.X509Certificates;
 using clk.Controllers;
 using clk.Models;
@@ -13,8 +14,9 @@ namespace clk
 {
     internal class Program
     {
-        private static string restUrl = "http://localhost:50066/Service1.svc/";
-
+        //private static string restUrl = "http://localhost:50066/Service1.svc/";
+        private static string restUrl = "https://easj-final.azurewebsites.net/Service1.svc/";
+        
         public static Profile user = new Profile();
 
         private static ArgumentController argController;
@@ -134,6 +136,14 @@ namespace clk
                 if (arg.key.Equals("--cloud-boards"))
                     dbGetAllBoards();
                 
+                if (arg.key.Equals("--label"))
+                    setLabel(arg.value);
+                
+                if (arg.key.Equals("--edit"))
+                    edit(arg.value);
+                
+                
+                
                 /*if (arg.key.Equals(""))
                     method(arg.value);*/
             }
@@ -150,6 +160,12 @@ namespace clk
             write.commentDestination();
         }
 
+        /// <summary>
+        /// If --p is incl. this will run.
+        /// It will set the selected checklist,
+        /// and is needed for adding new point to a specific checklist.
+        /// </summary>
+        /// <param name="args">List of Argument from the argument controller</param>
         private static void setChecklist(List<string> args)
         {
             if (!args.Any())
@@ -172,6 +188,195 @@ namespace clk
             
             
         }
+
+
+        #region Update methods for Board, List, Card and Checklist (missing point atm)
+       
+        
+        /// <summary>
+        /// If --point is incl. this will run.
+        /// It will check/uncheck a point in a checklist -
+        /// Or at least invoke the controller, and let that handle it. 
+        /// </summary>
+        /// <param name="keyVal">KeyVal args from ToLookup (method in argument controller)</param>
+        private static void clickPoint(List<string> args)
+        {
+            
+            foreach (var val in args)
+            {
+                if (!Validators.isInt(val))
+                    continue;
+                
+                // Initialize controllers and validate that the user-inputs are available in their respectful lists
+                iniOvController();
+                iniLiController(boardId);
+                iniCaController(listId);
+            
+                if (!Validators.inList(caController.getChecklistPointsInCard(cardId), int.Parse(val)))
+                    write.error("The selected point was not valid.");
+            
+            
+                ChecklistPoint c = caController.getChecklistPointsInCard(cardId)[int.Parse(val)];
+                caController.clickPoint(c.id);
+
+                if (c.isCheck)
+                    Console.WriteLine("Checked point: " + c.name);
+                else
+                    Console.WriteLine("Un-checked point: " + c.name);
+            }
+        }
+
+        /// <summary>
+        /// This will set a label for a card.
+        /// Available colors are: red, green, yellow, blue and cyan.
+        /// </summary>
+        /// <param name="args"></param>
+        private static void setLabel(List<string> args)
+        {
+            if (args.Count != 1)
+                write.error("One 1 label can be assigned per card.");
+            
+            Label l = new Label();
+            
+            if (!l.isAvail(args.FirstOrDefault()))
+                write.error("The selected label color was not available (red, green, yellow, blue & cyan).");
+
+            l.label = args.FirstOrDefault();
+            
+            iniOvController();
+            iniLiController(boardId);
+            iniCaController(listId);
+            
+            if (!isCard)
+                write.error("The selected card was not available.");
+
+            caController.updateLabel(cardId, l);
+        }
+
+        /// <summary>
+        /// If --edit is incl. this will run.
+        /// This will figure out which element the user is trying to edit
+        /// (Board, list, card, checklist)
+        /// </summary>
+        /// <param name="args">The argument --edit</param>
+        private static void edit(List<string> args)
+        {
+            if (args.Count != 1)
+                write.error("Edit only take 1 value.");
+
+            if (args.FirstOrDefault().Equals(""))
+                return;
+            
+            if (isCheck)
+                editChecklist(args.FirstOrDefault());
+            else if (isCard)
+                editCard(args.FirstOrDefault());
+            else if (isList)
+                editList(args.FirstOrDefault());
+            else if (isBoard)
+                editBoard(args.FirstOrDefault());
+            else
+                write.error("No valid edit point was found.");
+        }
+
+        /// <summary>
+        /// Edit a board (change name)
+        /// It will use the boardId
+        /// </summary>
+        /// <param name="name">The new name</param>
+        private static void editBoard(string name)
+        {
+            Board b = ovController.boards.Find(x => x.id == boardId);
+            Console.WriteLine("Are you sure you want to change the name of board: " + b.name);
+            Console.WriteLine("To: " + name + "?");
+            Console.WriteLine();
+            
+            // Confirm with the user, that the update is wanted
+            Console.Write("Yes/no: ");
+            string answer = Console.ReadLine();
+            if (!answer.Substring(0, 1).ToLower().Equals("y")
+                || !answer.Equals(""))
+                return;
+
+            boardName = name;
+            ovController.updateBoard(name, boardId);
+            Console.WriteLine("Updated board: " + name);
+        }
+
+        /// <summary>
+        /// Edit a list (change name)
+        /// It will use the listId
+        /// </summary>
+        /// <param name="name">The new name</param>
+        private static void editList(string name)
+        {
+            List l = liController.lists.Find(x => x.id == listId);
+            Console.WriteLine("Are you sure you want to change the name of list: " + l.name);
+            Console.WriteLine("To: " + name + "?");
+            Console.WriteLine();
+            
+            // Confirm with the user, that the update is wanted
+            Console.Write("Yes/no: ");
+            string answer = Console.ReadLine();
+            if (!answer.Substring(0, 1).ToLower().Equals("y")
+                || !answer.Equals(""))
+                return;
+            
+            listName = name;
+            liController.updateList(name, listId);
+            Console.WriteLine("Updated list: " + name);
+        }
+
+        /// <summary>
+        /// Edit a card (change name)
+        /// It will use the cardId
+        /// </summary>
+        /// <param name="name">The new name</param>
+        private static void editCard(string name)
+        {
+            Card c = caController.cards.Find(x => x.id == cardId);
+            Console.WriteLine("Are you sure you want to change the name of card: " + c.name);
+            Console.WriteLine("To: " + name + "?");
+            Console.WriteLine();
+            
+            // Confirm with the user, that the update is wanted
+            Console.Write("Yes/no: ");
+            string answer = Console.ReadLine();
+            if (!answer.Substring(0, 1).ToLower().Equals("y")
+                || !answer.Equals(""))
+                return;
+
+            cardName = name;
+            caController.updateCard(name, cardId);
+            Console.WriteLine("Updated card: " + name);
+        }
+
+        /// <summary>
+        /// Edit a checklist (change name)
+        /// It will use the checkId
+        /// </summary>
+        /// <param name="name">The new name</param>
+        private static void editChecklist(string name)
+        {
+            Checklist c = caController.checklists.Find(x => x.id == checkId);
+            Console.WriteLine("Are you sure you want to change the name of checklist: " + c.name);
+            Console.WriteLine("To: " + name + "?");
+            Console.WriteLine();
+            
+            // Confirm with the user, that the update is wanted
+            Console.Write("Yes/no: ");
+            string answer = Console.ReadLine();
+            if (!answer.Substring(0, 1).ToLower().Equals("y")
+                || !answer.Equals(""))
+                return;
+
+            checkName = name;
+            caController.updateChecklist(name, checkId);
+            Console.WriteLine("Updated checklist: " + name);
+        }
+        
+
+        #endregion
         
         
         #region Init methods for each BoardController, ListController & CardController
@@ -343,39 +548,7 @@ namespace clk
         
 
         #endregion
-
-        /// <summary>
-        /// If --point is incl. this will run.
-        /// It will check/uncheck a point in a checklist -
-        /// Or at least invoke the controller, and let that handle it. 
-        /// </summary>
-        /// <param name="keyVal">KeyVal args from ToLookup (method in argument controller)</param>
-        public static void clickPoint(List<string> args)
-        {
-            
-            foreach (var val in args)
-            {
-                if (!Validators.isInt(val))
-                    continue;
-                
-                // Initialize controllers and validate that the user-inputs are available in their respectful lists
-                iniOvController();
-                iniLiController(boardId);
-                iniCaController(listId);
-            
-                if (!Validators.inList(caController.getChecklistPointsInCard(cardId), int.Parse(val)))
-                    write.error("The selected point was not valid.");
-            
-            
-                ChecklistPoint c = caController.getChecklistPointsInCard(cardId)[int.Parse(val)];
-                caController.clickPoint(c.id);
-
-                if (c.isCheck)
-                    Console.WriteLine("Checked point: " + c.name);
-                else
-                    Console.WriteLine("Un-checked point: " + c.name);
-            }
-        }
+        
         
         #region Create methods for Boards, Lists, Cards, Comments, Descriptions, Checklists & points
 
@@ -631,7 +804,10 @@ namespace clk
             rest.post(bc, "board/save");
         }
 
-        
+        /// <summary>
+        /// Get all boards from the database (associated to the profile of course)
+        /// </summary>
+        /// <returns>The associated boards</returns>
         private static IList<BoardController> dbGetAllBoards()
         {
             RestClient rest = new RestClient(restUrl);
@@ -666,5 +842,7 @@ namespace clk
         }
 
         #endregion
+        
+        
     }
 }
