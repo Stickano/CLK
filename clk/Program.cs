@@ -15,7 +15,7 @@ namespace clk
     internal class Program
     {
         //private static string restUrl = "http://localhost:50066/Service1.svc/";
-        private static string restUrl = "https://easj-final.azurewebsites.net/Service1.svc/";
+        private static string restUrl = "http://easj-final.azurewebsites.net/Service1.svc/";
         
         public static Profile user = new Profile();
 
@@ -54,6 +54,8 @@ namespace clk
 
         public static void Main(string[] args)
         {
+            
+            Console.Clear();
             
             if (!args.Any())
                 About.usage(); //TODO: continious running
@@ -206,49 +208,6 @@ namespace clk
             
         }
 
-        
-        /// <summary>
-        /// If a user wants to update an element,
-        /// first run this, display info and ask to confirm.
-        /// </summary>
-        /// <param name="from">The name to change from</param>
-        /// <param name="to">The name to change to</param>
-        /// <returns>True/False if the user selected yes (or empty)</returns>
-        private static bool confirmUpdate(string from, string to)
-        {
-            Console.WriteLine("Change: " + from);
-            Console.WriteLine("To: " + to + "?");
-
-            return confirm();
-        }
-
-        /// <summary>
-        /// When deleting, this will display info, then confirm.
-        /// </summary>
-        /// <param name="name">The name of the item you're about to delete.</param>
-        /// <returns>True/false if user selected yas or no</returns>
-        private static bool confirmDelete(string name)
-        {
-            Console.WriteLine("Delete: " + name + "?");
-            return confirm();
-        }
-
-        /// <summary>
-        /// This will ask a yes/no question,
-        /// and return true/false if yes or no.
-        /// </summary>
-        /// <returns>True/false if selected yes (or empty)</returns>
-        private static bool confirm()
-        {
-            Console.Write("Yes/no: ");
-            string answer = Console.ReadLine();
-            Console.WriteLine();
-            if (answer.Equals("")
-                || answer.Substring(0, 1).ToLower().Equals("y"))
-                return true;
-            return false;
-        }
-
 
         #region Delete methods for Board, lists, checklists, points and comments
         
@@ -273,7 +232,7 @@ namespace clk
                 Board b = ovController.getBoards()[int.Parse(val)];
                 string name = b.name;
 
-                if (!confirmDelete(name))
+                if (!write.confirmDelete(name))
                     return;
                 
                 ovController.deleteBoard(b.id);
@@ -305,7 +264,7 @@ namespace clk
                 List l = liController.getLists()[int.Parse(val)];
                 string name = l.name;
                 
-                if (!confirmDelete(name))
+                if (!write.confirmDelete(name))
                     return;
                 
                 liController.deleteList(l.id);
@@ -338,7 +297,7 @@ namespace clk
                 Card c = caController.getCards()[int.Parse(val)];
                 string name = c.name;
                 
-                if (!confirmDelete(name))
+                if (!write.confirmDelete(name))
                     return;
                 
                 caController.deleteCard(c.id);
@@ -372,7 +331,7 @@ namespace clk
                 Checklist c = caController.getChecklists(cardId)[int.Parse(val)];
                 string name = c.name;
                 
-                if (!confirmDelete(name))
+                if (!write.confirmDelete(name))
                     return;
                 
                 caController.deleteChecklist(c.id);
@@ -395,10 +354,6 @@ namespace clk
             if (!isCard)
                 write.error("The selected card was not valid.");
             
-            /*if (!isCheck)
-                write.error("The selected checklist was not valid.");
-            */
-
             foreach (var val in args)
             {
                 if (!Validators.isInt(val))
@@ -410,7 +365,7 @@ namespace clk
                 ChecklistPoint p = caController.getChecklistPointsInCard(cardId)[int.Parse(val)];
                 string name = p.name;
                 
-                if (!confirmDelete(name))
+                if (!write.confirmDelete(name))
                     return;
                 
                 caController.deletePoint(p.id);
@@ -444,7 +399,7 @@ namespace clk
                 Comment c = caController.getComments(cardId)[int.Parse(val)];
                 string date = c.created;
                 
-                if (!confirmDelete(date))
+                if (!write.confirmDelete(date))
                     return;
                 
                 caController.deleteComment(c.id);
@@ -553,7 +508,7 @@ namespace clk
         {
             Board b = ovController.getBoards().Find(x => x.id == boardId);
 
-            if (!confirmUpdate(b.name, name))
+            if (!write.confirmUpdate(b.name, name))
                 return;
 
             boardName = name;
@@ -570,7 +525,7 @@ namespace clk
         {
             List l = liController.lists.Find(x => x.id == listId);
             
-            if (!confirmUpdate(l.name, name))
+            if (!write.confirmUpdate(l.name, name))
                 return;
             
             listName = name;
@@ -587,7 +542,7 @@ namespace clk
         {
             Card c = caController.cards.Find(x => x.id == cardId);
             
-            if (!confirmUpdate(c.name, name))
+            if (!write.confirmUpdate(c.name, name))
                 return;
 
             cardName = name;
@@ -604,7 +559,7 @@ namespace clk
         {
             Checklist c = caController.checklists.Find(x => x.id == checkId);
             
-            if (!confirmUpdate(c.name, name))
+            if (!write.confirmUpdate(c.name, name))
                 return;
 
             checkName = name;
@@ -1001,9 +956,19 @@ namespace clk
             // Make sure we have a password
             if (user.password == null)
                 write.error("Missing a password argument.");
-
+            
             RestClient rest = new RestClient(restUrl);
-            rest.post(user, "profile/create");
+
+            try
+            {
+                rest.post(user, "profile/create");
+            }
+            catch (Exception e)
+            {
+                write.error(e.Message);
+            }
+
+            Console.WriteLine("Profile created.");
         }
 
         /// <summary>
@@ -1016,22 +981,28 @@ namespace clk
         private static void login()
         {
             // Make sure we have a password
-            if (user.password == null)
-                write.error("Missing a password argument.");
+            if (user.password == null || user.email == null)
+                write.error("Missing a login (password or email) argument.");
 
             RestClient client = new RestClient(restUrl);
-            string c = client.post(user, "profile/login");
             
-            Profile response = JsonConvert.DeserializeObject<Profile>(c);
-            if (response.id == null)
+            try
             {
-                Ascii.ahahah();
-                Environment.Exit(0);
+                string c = client.post(user, "profile/login");
+                Profile response = JsonConvert.DeserializeObject<Profile>(c);
+                user.id = response.id;
+                user.created = response.created;
+                user.username = response.username;
+            }
+            catch (Exception e)
+            {
+                write.error(e.Message);
             }
 
-            user.id = response.id;
-            user.created = response.created;
-            user.username = response.username;
+            if (user.id == null)
+                write.error("Username or password was incorrect.");
+            
+            Console.WriteLine("Successfully logged into: " + user.email);
         }
 
         /// <summary>
@@ -1048,7 +1019,17 @@ namespace clk
             bc.password = user.password;
 
             RestClient rest = new RestClient(restUrl);
-            rest.post(bc, "board/save");
+
+            try
+            {
+                rest.post(bc, "board/save");
+            }
+            catch (Exception e)
+            {
+                write.error(e.Message);
+            }
+
+            Console.WriteLine("Saved board to the cloud: " + bc.name);
         }
 
         /// <summary>

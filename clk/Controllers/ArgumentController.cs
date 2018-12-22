@@ -51,24 +51,28 @@ namespace clk.Controllers
             
             // Group the arguments by key => value(s)
             int br = 0;
-            Argument a = new Argument();
-            Argument profile = new Argument{key = "--user"};
+            Argument a = new Argument {key = ""};
+            //Argument profile = new Argument{key = "--user"};
+            bool uname = false;
+            bool upass = false;
             foreach (string arg in args)
             {
                 if (arg.Equals(""))
                     continue;
                 
                 // Handle if it is a profile request (login ex)
-                if (arg.Equals("--login") || arg.Equals("--new-profile"))
+                if (arg.Equals("--login") || arg.Equals("--new-profile") || uname)
                 {
-                    Program.user.email = arg;
-                    continue;
+                    if (uname)
+                        Program.user.email = arg;
+                    uname = !uname;
                 }
-                if (arg.Equals("--password"))
+                if (arg.Equals("--password") || upass)
                 {
                     string pw = Random.hashString(arg);
-                    Program.user.password = pw;
-                    continue;
+                    if (upass)
+                        Program.user.password = pw;
+                    upass = !uname;
                 }
                 
                 // If the --new keyword is used, note it
@@ -145,11 +149,6 @@ namespace clk.Controllers
             }
             
             argList.Add(a);
-            
-            // If both username and password is set,
-            // add the profile argument to the list
-            if (profile.value.Count == 2)
-                argList.Add(profile);
         }
     }
 }
