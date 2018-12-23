@@ -42,30 +42,26 @@ namespace clk
                     Ascii.clk();*/
 
 
-                int maxPos = 0;
+                int xMaxPos = 0;
+                int yMaxPos = 0;
 
                 // If the BOARD is not set, display ALL BOARDS
                 if (!isBoard)
                 {
                     write.writeBoards(ovController.getBoards(), controls.yPos);
-                    maxPos = ovController.getBoards().Count;
+                    yMaxPos = ovController.getBoards().Count;
                 }
 
                 
                 // If BOARD is set, display LISTS
-                if (isBoard)
+                if (isBoard && !isCard)
                 {
+                    listNum = controls.xPos;
                     iniLiController(boardId);
-                    maxPos = liController.getLists().Count;
-                    listNum = controls.yPos;
-
-                    // If you moved down, initialise and update controllers 
-                    if (controls.yPos > 0)
-                    {
-                        listNum = controls.yPos;
-                        iniLiController(boardId);
-                        iniCaController(listId);
-                    }
+                    xMaxPos = liController.getLists().Count;
+                    
+                    iniCaController(listId);
+                    yMaxPos = caController.getCards().Count + 1; // +1 for the list line
 
                     // Write out the board name that we are working in
                     Console.WriteLine();
@@ -73,16 +69,25 @@ namespace clk
                     Console.WriteLine("  -> "+ boardName);
                     EyeCandy.reset();
 
+                    // If you change list, make sure yPos is within limits
+                    if (controls.yPos >= yMaxPos)
+                        controls.yPos--;
+
                     
                     int startPos = 0;
                     if (controls.xPos - 3 > 0)
                         startPos = controls.xPos - 3;
 
-                    List<Card> cardsToRead = null;
-                    if (controls.yPos > 0)
-                        cardsToRead = caController.getCards();
-                    
+                    // Write out the lists, and the cards associated to the current selected list
+                    List<Card> cardsToRead = caController.getCards();
                     write.writeLists(liController.getLists(), startPos, controls.xPos, controls.yPos, cardsToRead);
+                }
+                
+                
+                // If CARD is set, display its content
+                if (isCard)
+                {
+                    Console.WriteLine("peek");
                 }
 
                 
@@ -93,7 +98,7 @@ namespace clk
 
                 // If the user just navigated (x and y pos in controls)
                 // Continue to reload the user interface.
-                if (controls.cursorAction(answer, maxPos) == -1)
+                if (controls.cursorAction(answer, xMaxPos, yMaxPos) == -1)
                     continue;
 
                 // If we selected enter without the board is set,
@@ -104,15 +109,13 @@ namespace clk
                     iniOvController();
                 }
 
-                if (!isList)
+                if (!isCard)
                 {
-                    listNum = controls.yPos - 1;
+                    cardNum = controls.yPos;
+                    iniCaController(listId);
                 }
-
             }
-            
         }
-        
         
         
         

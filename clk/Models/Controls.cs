@@ -6,8 +6,8 @@ namespace clk.Models
     public class Controls
     {
 
-        public int xPos { get; private set; }
-        public int yPos { get; private set; }
+        public int xPos { get;  set; }
+        public int yPos { get;  set; }
 
         public Controls()
         {
@@ -16,7 +16,7 @@ namespace clk.Models
         }
         
 
-        public int cursorAction(ConsoleKey keyPush, int maxPos)
+        public int cursorAction(ConsoleKey keyPush, int xMaxPos, int yMaxPos)
         {
 
             #region up, down, left, right navigation.
@@ -31,7 +31,7 @@ namespace clk.Models
             // move right
             if (keyPush == ConsoleKey.RightArrow || keyPush == ConsoleKey.L)
             {
-                if (xPos +1 < maxPos)
+                if (xPos +1 < xMaxPos)
                     xPos++;
             }
             
@@ -45,7 +45,7 @@ namespace clk.Models
             // move down
             if (keyPush == ConsoleKey.DownArrow || keyPush == ConsoleKey.J)
             {
-                if (yPos +1 < maxPos)
+                if (yPos +1 < yMaxPos)
                     yPos++;
             }
 
@@ -62,7 +62,6 @@ namespace clk.Models
                 if (EyeCandy.confirm())
                     Environment.Exit(0);
             }
-
 
             return -1;
         }

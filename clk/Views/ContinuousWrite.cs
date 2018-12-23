@@ -48,7 +48,7 @@ namespace clk.Views
                 string name = EyeCandy.subString(lists[startPos + i].name, 28);
                 int nameLength = name.Length;
                 int indent = 0;
-                if (xPos == i)
+                if (xPos == i && yPos == 0)
                     cursor(2);
                 else
                     indent = 4;
@@ -70,18 +70,35 @@ namespace clk.Views
             if (cardsInList != null)
             {
                 int indent = column * 32;
+                int br = 0;
                 foreach (Card card in cardsInList)
                 {
-                    string name = "  |  " + EyeCandy.subString(card.name, 24);
-                    int nameLength = name.Length;
 
+                    br++;
+                    
+                    // Top of card box 
                     Console.WriteLine();
                     Console.Write(EyeCandy.indent(indent + 2) + "|" + EyeCandy.indent(28) + "|");
                     
+                    string name = EyeCandy.subString(card.name, 24);
+                    int nameLength = name.Length;
+                    
+                    // Left side of box with name line
                     Console.WriteLine();
-                    Console.Write(EyeCandy.indent(indent) + name);
-                    Console.Write(EyeCandy.indent(30-nameLength) + " |");
+                    Console.Write(EyeCandy.indent(indent + 2) + "|");
 
+                    // To write cursor or not to write cursor, that is the question
+                    int ind = 0;
+                    if (yPos == br)
+                        cursor();
+                    else
+                        ind = 2;
+                    
+                    // Print the name of the card, and the end of the box with the name line (right side)
+                    Console.Write(EyeCandy.indent(ind) + name);
+                    Console.Write(EyeCandy.indent(30-nameLength - 4) + "|");
+
+                    // Bottom of the card box
                     Console.WriteLine();
                     Console.Write(EyeCandy.indent(indent + 2) + "|");
                     for (int i = 0; i < 14; i++)
@@ -91,8 +108,6 @@ namespace clk.Views
                     Console.Write("|");
                 }
             }
-            
-
         }
 
         private void cursor(int indent = 0)
