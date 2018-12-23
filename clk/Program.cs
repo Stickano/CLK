@@ -15,16 +15,16 @@ namespace clk
     internal class Program
     {
         //private static string restUrl = "http://localhost:50066/Service1.svc/";
-        private static string restUrl = "http://easj-final.azurewebsites.net/Service1.svc/";
+        public static string restUrl = "http://easj-final.azurewebsites.net/Service1.svc/";
         
         public static Profile user = new Profile();
 
-        private static ArgumentController argController;
-        private static OverviewController ovController;
-        private static ListController liController;
-        private static CardController caController;
+        public static ArgumentController argController;
+        public static OverviewController ovController;
+        public static ListController liController;
+        public static CardController caController;
 
-        private static Write write;
+        public static Write write;
 
         // Latest arg input from the loop
         // on boards, lists, cards, checklists & points.
@@ -47,18 +47,15 @@ namespace clk
 
         // These confirm, that the input value
         // indeed matches an index in one of the lists
-        private static bool isBoard;
-        private static bool isList;
-        private static bool isCard;
-        private static bool isCheck;
+        public static bool isBoard;
+        public static bool isList;
+        public static bool isCard;
+        public static bool isCheck;
 
         public static void Main(string[] args)
         {
             
             Console.Clear();
-            
-            if (!args.Any())
-                About.usage(); //TODO: continious running
             
             // Check that we have Json files
             Json.isFiles();
@@ -79,6 +76,15 @@ namespace clk
                 Ascii.clkBoards();
             else
                 Ascii.clk();
+            
+            
+            // Continuous running
+            if (!args.Any())
+            {
+                Continuous c = new Continuous();
+                c.loopApp();
+                Environment.Exit(0);
+            }
 
             // Send the merry argument on its way to its corresponding method
             foreach (Argument arg in argController.argList)
@@ -578,7 +584,7 @@ namespace clk
         /// and set the board-id and board-name for
         /// chosen board (from user parameter).
         /// </summary>
-        private static void iniOvController()
+        public static void iniOvController()
         {
             ovController = new OverviewController();
             isBoard = false;
@@ -596,7 +602,7 @@ namespace clk
         /// chosen list. This requires the boardId where the list resides. 
         /// </summary>
         /// <param name="boardId">The board which holds the list</param>
-        private static void iniLiController(string boardId)
+        public static void iniLiController(string boardId)
         {
             liController = new ListController(boardId);
             isList = false;
@@ -614,7 +620,7 @@ namespace clk
         /// where the card(s) resides. 
         /// </summary>
         /// <param name="listId">The ID of the list, where the card(s) resides.</param>
-        private static void iniCaController(string listId)
+        public static void iniCaController(string listId)
         {
             caController = new CardController(listId);
             isCard = false;
@@ -956,6 +962,8 @@ namespace clk
             // Make sure we have a password
             if (user.password == null)
                 write.error("Missing a password argument.");
+
+            Console.WriteLine(user.password);
             
             RestClient rest = new RestClient(restUrl);
 
@@ -1036,19 +1044,25 @@ namespace clk
         /// Get all boards from the database (associated to the profile of course)
         /// </summary>
         /// <returns>The associated boards</returns>
-        private static IList<BoardController> dbGetAllBoards()
+        private static void dbGetAllBoards()
         {
             RestClient rest = new RestClient(restUrl);
-            string c = rest.post(user, "board/getall");
-            Console.WriteLine(c);
-            IList<BoardController> response = JsonConvert.DeserializeObject<IList<BoardController>>(c);
 
-            foreach (BoardController bc in response)
+            try
             {
-                Console.WriteLine(bc.name);
-            }
+                string c = rest.post(user, "board/getall");
+                IList<BoardController> response = JsonConvert.DeserializeObject<IList<BoardController>>(c);
 
-            return response;
+                Console.WriteLine("Available boards from the clouds:");
+                foreach (BoardController bc in response)
+                {
+                    Console.WriteLine(bc.name);
+                }
+            }
+            catch (Exception e)
+            {
+                write.error(e.Message);
+            }
         }
 
         private static void dbGetBoard(List<string> args)

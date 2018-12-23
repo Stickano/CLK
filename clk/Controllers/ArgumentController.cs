@@ -72,7 +72,7 @@ namespace clk.Controllers
                     string pw = Random.hashString(arg);
                     if (upass)
                         Program.user.password = pw;
-                    upass = !uname;
+                    upass = !upass;
                 }
                 
                 // If the --new keyword is used, note it

@@ -44,5 +44,35 @@ namespace clk.Resources
         {
             Console.ResetColor();
         }
+
+        /// <summary>
+        /// This will shorten a text down, if longer than the line length,
+        /// and add a couple of dots to show that the line continuous. 
+        /// </summary>
+        /// <param name="text">The text to shorten (if to long)</param>
+        /// <param name="lineLength">The length of the line (amount of characters the text can take up)</param>
+        /// <returns>The shortened text</returns>
+        public static string subString(string text, int lineLength)
+        {
+            if (text.Length > lineLength)
+                text = text.Substring(0, lineLength - 2) + "..";
+            return text;
+        }
+        
+        /// <summary>
+        /// This will ask a yes/no question,
+        /// and return true/false if yes or no.
+        /// </summary>
+        /// <returns>True/false if selected yes (or empty)</returns>
+        public static bool confirm()
+        {
+            Console.Write("Yes/no: ");
+            string answer = Console.ReadLine();
+            Console.WriteLine();
+            if (answer.Equals("")
+                || answer.Substring(0, 1).ToLower().Equals("y"))
+                return true;
+            return false;
+        }
     }
 }

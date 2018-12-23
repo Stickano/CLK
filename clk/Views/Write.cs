@@ -317,7 +317,7 @@ namespace clk.Views
             Console.WriteLine("Change: " + from);
             Console.WriteLine("To: " + to + "?");
 
-            return confirm();
+            return EyeCandy.confirm();
         }
 
         /// <summary>
@@ -328,24 +328,10 @@ namespace clk.Views
         public bool confirmDelete(string name)
         {
             Console.WriteLine("Delete: " + name + "?");
-            return confirm();
+            return EyeCandy.confirm();
         }
 
-        /// <summary>
-        /// This will ask a yes/no question,
-        /// and return true/false if yes or no.
-        /// </summary>
-        /// <returns>True/false if selected yes (or empty)</returns>
-        public bool confirm()
-        {
-            Console.Write("Yes/no: ");
-            string answer = Console.ReadLine();
-            Console.WriteLine();
-            if (answer.Equals("")
-                || answer.Substring(0, 1).ToLower().Equals("y"))
-                return true;
-            return false;
-        }
+        
 
     }
 }
