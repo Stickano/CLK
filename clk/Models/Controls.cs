@@ -51,7 +51,7 @@ namespace clk.Models
 
             #endregion
 
-            if (keyPush == ConsoleKey.Enter)
+            if (keyPush == ConsoleKey.Enter || keyPush == ConsoleKey.Spacebar)
                 return 1;
 
             // Quit
@@ -62,8 +62,27 @@ namespace clk.Models
                 if (EyeCandy.confirm())
                     Environment.Exit(0);
             }
+            
+            if (keyPush == ConsoleKey.B)
+                goBack();
 
             return -1;
+        }
+
+        private void goBack()
+        {
+            if (Program.isCard)
+            {
+                Program.cardNum = -1;
+                Program.isCard = false;
+            }
+            else if (Program.isBoard)
+            {
+                Program.listNum = -1;
+                Program.boardNum = -1;
+                Program.isList = false;
+                Program.isBoard = false;
+            }
         }
         
     }

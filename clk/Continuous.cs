@@ -85,9 +85,17 @@ namespace clk
                 
                 
                 // If CARD is set, display its content
-                if (isCard)
+                if (isCard && isList)
                 {
-                    Console.WriteLine("peek");
+                    Card card = caController.cards.Find(x => x.id == cardId);
+
+                    int chkCount = caController.getChecklists(cardId).Count;
+                    int pointCount = caController.getChecklistPointsInCard(cardId).Count;
+                    int commentCount = caController.getComments(cardId).Count;
+
+                    yMaxPos = 2 + chkCount + pointCount + commentCount; // +2 for headline and description
+                    
+                    write.writeCard(card, caController, controls.yPos, yMaxPos);
                 }
 
                 
@@ -109,10 +117,12 @@ namespace clk
                     iniOvController();
                 }
 
-                if (!isCard)
+                // If the user select a card, initialize the card controller
+                if (isList && !isCard && controls.yPos != 0)
                 {
-                    cardNum = controls.yPos;
+                    cardNum = controls.yPos - 1; // -1 to correct index (top (0) is list headline)
                     iniCaController(listId);
+                    controls.yPos = 1; // Start at description
                 }
             }
         }
