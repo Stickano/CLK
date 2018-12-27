@@ -235,6 +235,28 @@ namespace clk.Controllers
         }
 
         /// <summary>
+        /// Update the name of an checklist point.
+        /// </summary>
+        /// <param name="name">The new value (name/description) for the point</param>
+        /// <param name="pointId">The ID of the point to change the value for.</param>
+        public void updateChecklistPoint(string name, string pointId)
+        {
+            points.Find(x => x.id == pointId).name = name;
+            pointJson.writeFile(points);
+        }
+
+        /// <summary>
+        /// Update a comment
+        /// </summary>
+        /// <param name="comment">The new value of the comment</param>
+        /// <param name="commentId">The ID of the comment to change</param>
+        public void updateComment(string comment, string commentId)
+        {
+            comments.Find(x => x.id == commentId).comment = comment;
+            commentJson.writeFile(comments);
+        }
+
+        /// <summary>
         /// Set a comment to inactive (delete).
         /// </summary>
         /// <param name="commentId">The ID of the comment to archive</param>

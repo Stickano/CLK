@@ -2,7 +2,7 @@ namespace clk.Models
 {
     public class ChecklistPoint
     {
-        public string name { get; }
+        public string name { get; set; }
         public string id { get; }
         public string checklistId { get; }
         public string created { get; }

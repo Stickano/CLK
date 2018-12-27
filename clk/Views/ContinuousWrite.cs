@@ -30,6 +30,7 @@ namespace clk.Views
                     indent = 2;
                 
                 Console.Write(EyeCandy.indent(indent) + board.name);
+                Console.WriteLine();
                 br++;
             }
         }
@@ -136,7 +137,6 @@ namespace clk.Views
             Console.Write(EyeCandy.indent(indent) + "> ");
             EyeCandy.reset();
         }
-
 
         /// <summary>
         /// Used to print out the list headlines.
@@ -253,11 +253,11 @@ namespace clk.Views
                 {
                     br++;
                     
-                    indent = 0;
+                    indent = 2;
                     if (yPos == brChk + br)
                         cursor();
                     else
-                        indent = 2;
+                        indent = 4;
                     
                     // Colors, colors everywhere!
                     if (point.isCheck)
@@ -310,6 +310,133 @@ namespace clk.Views
                 Console.WriteLine(EyeCandy.indent(2) + comment.comment);
                 Console.WriteLine();
             }
+        }
+
+        /// <summary>
+        /// This will write out the available options (the menu).
+        /// It will display a dynamic menu depending on, if the board and card
+        /// is set or not.
+        /// </summary>
+        /// <param name="board">If the board is set</param>
+        /// <param name="card">if the card is set</param>
+        public void writeMenu(bool board = false, bool card = false) 
+        {
+            Console.WriteLine();
+            Console.WriteLine();
+
+            // The lines available for the menu.
+            string navigateInfo = "h/j/k/l  (or arrows)  to navigate.";
+            string selectInfo = "Space / Enter to select the item at he cursor.";
+            string checkPoint = "Space / Enter to check/un-check a checklist point";
+            string navFirstList = "r    first list.";
+            string navLastList  = "t    last list.";
+            string navToTop = "f    top selection.";
+            string navToBot = "g    bottom selection.";
+            string newList = "i    create a new list.";
+            string newCard = "o    create a new card.";
+            string newBoard = "i    create a new board.";
+            string updElem = "u    update element at cursor.";
+            string delElem = "d    delete element at cursor.";
+            string newCheck = "i    create a new checklist.";
+            string newPoint = "o    create a new checklist point.";
+            string back = "b    back one step.";
+            string quit = "q    quit the application.";
+            string boardDetails = "m    show board details.";
+            string newCom = "c    create a new comment.";
+            string settings = "s    show settings.";
+            string login = "a    to login.";
+            string cloudSave = "x    save board to cloud.";
+            string cloudGet = "z    get all boards from the cloud.";
+            
+            // Write me this, pls.
+            writeMenu(navigateInfo);
+
+            // Write this if the board is NOT set
+            if (!board)
+            {
+                writeMenu(selectInfo);
+                writeMenu(newBoard);
+                writeMenu(updElem);
+                writeMenu(delElem);
+            }
+
+            // Write this if the bard is set, and the card is NOT set
+            if (board && !card)
+            {
+                writeMenu(selectInfo);
+                writeMenu(newList);
+                writeMenu(newCard);
+                writeMenu(updElem);
+                writeMenu(delElem);
+
+                writeMenu(navFirstList);
+                writeMenu(navLastList);
+                writeMenu(navToTop);
+                writeMenu(navToBot);
+            }
+
+            // Write this if the card is set
+            if (card)
+            {
+                writeMenu(checkPoint);
+                writeMenu(newCheck);
+                writeMenu(newPoint);
+                writeMenu(newCom);
+            }
+
+            // Write this if the board is set
+            if (board)
+            {
+                writeMenu(boardDetails);
+                writeMenu(back);
+            }
+            
+            // Also write this.
+            writeMenu(settings);
+            writeMenu(quit);
+            
+            // TODO: missing cloud thingys
+        }
+
+        /// <summary>
+        /// This will write out a line of the menu options
+        /// </summary>
+        /// <param name="toWrite">The line to write</param>
+        private void writeMenu(string toWrite)
+        {
+            Console.WriteLine();
+            Console.Write("[ " + toWrite);
+            Console.Write(EyeCandy.indent(80 - toWrite.Length) + " ]");
+        }
+
+        /// <summary>
+        /// This will ask for a new value, when the user decides to update a element.
+        /// </summary>
+        /// <param name="oldValue">The name of the old object</param>
+        /// <returns>New objects name, or if empty just the old one.</returns>
+        public string updateValue(string oldValue)
+        {
+            Console.WriteLine();
+            Console.WriteLine("Update the value of: " + oldValue);
+            Console.WriteLine("New value: ");
+
+            string input = Console.ReadLine();
+            if (input.Equals(""))
+                return oldValue;
+            
+            return input;
+        }
+
+        /// <summary>
+        /// This will ask for a new value for a new element.
+        /// </summary>
+        /// <param name="toCreate">What the user is creating (Board, List, Card, Checklist, Checklist Point, Comment)</param>
+        /// <returns>The user input</returns>
+        public string createValue(string toCreate)
+        {
+            Console.WriteLine();
+            Console.WriteLine("Create a new " + toCreate + ": ");
+            return Console.ReadLine();
         }
     }
 }
