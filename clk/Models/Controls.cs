@@ -122,6 +122,11 @@ namespace clk.Models
             if (keyPush == ConsoleKey.O)
                 return 5;
 
+            /*if (xPos >= xMaxPos && xPos > 0)
+                xPos--;
+            if (yPos >= yMaxPos)
+                yPos--;*/
+
             return -1;
         }
 

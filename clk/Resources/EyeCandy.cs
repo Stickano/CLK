@@ -68,9 +68,11 @@ namespace clk.Resources
         {
             Console.Write("Yes/no: ");
             string answer = Console.ReadLine();
+            
             Console.WriteLine();
-            if (answer.Equals("")
-                || answer.Substring(0, 1).ToLower().Equals("y"))
+            if (answer.Equals("") || answer.Substring(0, 1)
+                                           .ToLower()
+                                           .Equals("y"))
                 return true;
             return false;
         }

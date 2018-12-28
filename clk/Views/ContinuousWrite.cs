@@ -1,6 +1,7 @@
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using clk.Controllers;
 using clk.Models;
@@ -44,13 +45,19 @@ namespace clk.Views
         /// <param name="xPos">X position from controls</param>
         /// <param name="yPos">Y position from controls</param>
         /// <param name="cardsInList">All the cards associated to the list at x-position</param>
-        public void writeLists(List<List> lists, int startPos, int xPos, int yPos, List<Card> cardsInList = null)
+        public void writeList(List<List> lists, int xPos, int yPos, int startPos, List<Card> cardsInList = null)
+        //public void writeLists(List<List> lists, int startPos, int xPos, int yPos, List<Card> cardsInList = null)
         {
             int listsCount = lists.Count;
             int toDisplay = 3;
             if (listsCount < toDisplay)
                 toDisplay = listsCount;
 
+            /*Console.WriteLine("xpos: "+xPos);
+            Console.WriteLine("todisplay: "+toDisplay);
+            //Console.WriteLine("start: "+startPos);
+            Console.WriteLine("count: " + listsCount);*/
+            
             // Top of boxes
             Console.WriteLine();            
             for (int i = 0; i < toDisplay; i++)
@@ -60,19 +67,35 @@ namespace clk.Views
 
             // Headlines / names
             Console.WriteLine();
-            for (int i = startPos; i < toDisplay; i++)
+            int listBr = 0;
+            foreach (List list in lists)
             {
-                string name = EyeCandy.subString(lists[startPos + i].name, 28);
-                int nameLength = name.Length;
+                string name = EyeCandy.subString(list.name, 28);
+                int nameLength = name.Length; // kek, I set the length in the line above. Good job jeppesen.. Good job indeed.
                 int indent = 0;
-                if (xPos == i && yPos == 0)
+                if (startPos+listBr == xPos  && yPos == 0)
+                    cursor(2);
+                else
+                    indent = 4;
+
+                listBr++;
+                Console.Write(EyeCandy.indent(indent) + name);
+                Console.Write(EyeCandy.indent(30 - nameLength - 2));
+            }
+            
+            /*for (int i = 0; i < toDisplay; i++)
+            {
+                string name = EyeCandy.subString(lists[xPos].name, 28);
+                int nameLength = name.Length; // kek, I set the length in the line above. Good job jeppesen.. Good job indeed.
+                int indent = 0;
+                if (xPos -startPos == i  && yPos == 0)
                     cursor(2);
                 else
                     indent = 4;
                 
                 Console.Write(EyeCandy.indent(indent) + name);
                 Console.Write(EyeCandy.indent(30 - nameLength - 2));
-            }
+            }*/
 
             // Bottom of boxes
             Console.WriteLine();
@@ -253,9 +276,9 @@ namespace clk.Views
                 {
                     br++;
                     
-                    indent = 2;
+                    indent = 0;
                     if (yPos == brChk + br)
-                        cursor();
+                        cursor(2);
                     else
                         indent = 4;
                     

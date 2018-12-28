@@ -80,8 +80,8 @@ namespace clk
                     // Display 3 lists at the time. 
                     // And set the correct index for the first shown list.
                     int startPos = 0;
-                    if (controls.xPos - 3 > 0)
-                        startPos = controls.xPos - 3;
+                    if (controls.xPos - 3 >= 0)
+                        startPos = controls.xPos - 2;
 
                     // Write out the lists, and the cards associated to the current selected list
                     List<Card> cardsToRead = caController.getCards();
@@ -89,7 +89,8 @@ namespace clk
                     if (!cardsToRead.Any())
                         controls.yPos = 0;
                     
-                    write.writeLists(liController.getLists(), startPos, controls.xPos, controls.yPos, cardsToRead);
+                    write.writeList(liController.getLists().GetRange(startPos, 3), controls.xPos, controls.yPos, startPos, cardsToRead);
+                    //write.writeLists(liController.getLists(), startPos, controls.xPos, controls.yPos, cardsToRead);
                 }
                 
                 
@@ -186,7 +187,7 @@ namespace clk
                     if (response == 3 && controls.yPos == 0)
                     {
                         Console.WriteLine();
-                        Console.WriteLine("Are you sure you wanna delete the list: " + listName);
+                        Console.WriteLine("Are you sure you wanna delete this list: " + listName);
                         if (!EyeCandy.confirm())
                             continue;
                         
@@ -204,6 +205,11 @@ namespace clk
                     // If the user deletes a card.
                     if (response == 3 && controls.yPos != 0)
                     {
+                        Console.WriteLine();
+                        Console.WriteLine("Are you sure you wanna delete this card: " + caController.getCards()[controls.yPos-1].name);
+                        if (!EyeCandy.confirm())
+                            continue;
+                        
                         Card c = caController.getCards()[controls.yPos - 1];
                         caController.deleteCard(c.id);
                     }
@@ -245,6 +251,16 @@ namespace clk
                 if (isCard)
                 {
                     object selectedElement = ObjectValues.getObjectInYPos(caController, cardId, controls.yPos);
+
+                    // Click a checklist point
+                    if (response == 1)
+                    {
+                        if (selectedElement is ChecklistPoint)
+                        {
+                            ChecklistPoint p = (ChecklistPoint) selectedElement;
+                            caController.clickPoint(p.id);
+                        }
+                    }
 
                     // Update a description on a card
                     if (response == 2 && controls.yPos == 1)
