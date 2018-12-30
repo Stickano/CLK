@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ConstrainedExecution;
+using System.Runtime.Remoting.Messaging;
 using System.Security.Cryptography.X509Certificates;
 using clk.Controllers;
 using clk.Models;
@@ -14,8 +15,8 @@ namespace clk
 {
     internal class Program
     {
-        //private static string restUrl = "http://localhost:50066/Service1.svc/";
-        public static string restUrl = "http://easj-final.azurewebsites.net/Service1.svc/";
+        private static string restUrl = "http://localhost:50066/Service1.svc/";
+        //public static string restUrl = "http://easj-final.azurewebsites.net/Service1.svc/";
         
         public static Profile user = new Profile();
 
@@ -174,6 +175,7 @@ namespace clk
             }
             
             // Write the output for the selection
+            // TODO: Casts exceptions on first creations of elements (no elements in lists).
             Console.WriteLine();
             if (argController.isCard && isCard)
                 write.card(caController.cards.Find(x => x.id == cardId), caController);
@@ -1040,29 +1042,37 @@ namespace clk
             Console.WriteLine("Saved board to the cloud: " + bc.name);
         }
 
+        private static void cloudBoards()
+        {
+            List<BoardController> response = dbGetAllBoards();
+            int br = 1;
+            Console.WriteLine("Available boards from the clouds:");
+            foreach (BoardController bc in response)
+            {
+                Console.WriteLine("[" + br + "] " + bc.name);
+                br++;
+            }
+        }
+
         /// <summary>
         /// Get all boards from the database (associated to the profile of course)
         /// </summary>
         /// <returns>The associated boards</returns>
-        private static void dbGetAllBoards()
+        private static List<BoardController> dbGetAllBoards()
         {
+            List<BoardController> response = new List<BoardController>();
             RestClient rest = new RestClient(restUrl);
-
             try
             {
                 string c = rest.post(user, "board/getall");
-                IList<BoardController> response = JsonConvert.DeserializeObject<IList<BoardController>>(c);
-
-                Console.WriteLine("Available boards from the clouds:");
-                foreach (BoardController bc in response)
-                {
-                    Console.WriteLine(bc.name);
-                }
+                response = JsonConvert.DeserializeObject<List<BoardController>>(c);
             }
             catch (Exception e)
             {
                 write.error(e.Message);
             }
+
+            return response;
         }
 
         private static void dbGetBoard(List<string> args)

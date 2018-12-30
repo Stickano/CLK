@@ -5,8 +5,6 @@ namespace clk.Controllers
 {
     public class BoardController
     {
-        private string boardId;
-
         public string name { get; set; }
         public string created { get; set; }
         public string id { get; set; }
@@ -27,9 +25,26 @@ namespace clk.Controllers
         private Json pointJson;
         private Json commentJson;
 
+        public BoardController()
+        {
+            iniJsonAndLists();
+        }
+
         public BoardController(string boardId)
         {
-            this.boardId = boardId;
+            id= boardId;
+            iniJsonAndLists();
+
+            Board b = boardJson.readFile<Board>().Find(x => x.id == id);
+            name = b.name;
+            created = b.created;
+
+            // Start a chain-reaction and populte all our lists
+            populateLists();
+        }
+
+        private void iniJsonAndLists()
+        {
 
             boardJson = new Json("boards.json");
             listJson = new Json("lists.json");
@@ -46,13 +61,6 @@ namespace clk.Controllers
 
             password = "";
             userId = "";
-
-            Board b = boardJson.readFile<Board>().Find(x => x.id == boardId);
-            name = b.name;
-            created = b.created;
-
-            // Start a chain-reaction and populte all our lists
-            populateLists();
         }
 
         /// <summary>
@@ -61,7 +69,7 @@ namespace clk.Controllers
         /// </summary>
         private void populateLists()
         {
-            lists = listJson.readFile<List>().FindAll(x => x.boardId == boardId);
+            lists = listJson.readFile<List>().FindAll(x => x.boardId == id);
             populateCards();
         }
 
