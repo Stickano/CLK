@@ -26,7 +26,7 @@ namespace clk.Views
                 
                 int indent = 0;
                 if (br == linePosition)
-                    cursor();
+                    EyeCandy.cursor();
                 else
                     indent = 2;
                 
@@ -62,7 +62,7 @@ namespace clk.Views
             Console.WriteLine();            
             for (int i = 0; i < toDisplay; i++)
             {
-                boxTop(30);   
+                EyeCandy.boxTop(30);   
             }
 
             // Headlines / names
@@ -74,7 +74,7 @@ namespace clk.Views
                 int nameLength = name.Length; // kek, I set the length in the line above. Good job jeppesen.. Good job indeed.
                 int indent = 0;
                 if (startPos+listBr == xPos  && yPos == 0)
-                    cursor(2);
+                    EyeCandy.cursor(2);
                 else
                     indent = 4;
 
@@ -101,7 +101,7 @@ namespace clk.Views
             Console.WriteLine();
             for (int i = 0; i < toDisplay; i++)
             {
-                boxBottom(30);   
+                EyeCandy.boxBottom(30);   
             }
             
             
@@ -130,7 +130,7 @@ namespace clk.Views
                     // To write cursor or not to write cursor, that is the question
                     int ind = 0;
                     if (yPos == br)
-                        cursor();
+                        EyeCandy.cursor();
                     else
                         ind = 2;
                     
@@ -149,47 +149,6 @@ namespace clk.Views
                 }
             }
         }
-
-        /// <summary>
-        /// The cursor used to inform the user where he is on the board.
-        /// </summary>
-        /// <param name="indent">Characters to indent (if you want)</param>
-        private void cursor(int indent = 0)
-        {
-            EyeCandy.color("cyan");
-            Console.Write(EyeCandy.indent(indent) + "> ");
-            EyeCandy.reset();
-        }
-
-        /// <summary>
-        /// Used to print out the list headlines.
-        /// Prints out the top of a box-ish kinda thing.
-        /// </summary>
-        /// <param name="boxSize">The size of the box (character spaces)</param>
-        public void boxTop(int boxSize)
-        {
-            Console.Write(EyeCandy.indent(2) + "╔");
-            for (int i = 0; i < boxSize-2; i++)
-            {
-                Console.Write("═");
-            }
-            Console.Write("╗");
-        }
-
-        /// <summary>
-        /// Used to print out the bottom of the list headlines.
-        /// Prints outthe bottom of the box thingy.
-        /// </summary>
-        /// <param name="boxSize">The size of the box.</param>
-        public void boxBottom(int boxSize)
-        {
-            Console.Write(EyeCandy.indent(2) + "╚");
-            for (int i = 0; i < boxSize-2; i++)
-            {
-                Console.Write("═");
-            }
-            Console.Write("╝");
-        }
         
         /// <summary>
         /// Print out a card and its content
@@ -202,23 +161,23 @@ namespace clk.Views
             int nameLength = cardName.Length;
 
             Console.WriteLine();
-            boxTop(nameLength + 4);
+            EyeCandy.boxTop(nameLength + 4);
             Console.WriteLine(EyeCandy.indent(2));
             
             int indent = 2;
             if (yPos == 0)
-                cursor();
+                EyeCandy.cursor();
             else
                 indent = 4;
             
             Console.Write(EyeCandy.indent(indent) + cardName);
             Console.WriteLine();
-            boxBottom(nameLength + 4);
+            EyeCandy.boxBottom(nameLength + 4);
             Console.WriteLine();
 
             indent = 0;
             if (yPos == 1)
-                cursor();
+                EyeCandy.cursor();
             else
                 indent = 2;
             
@@ -239,7 +198,7 @@ namespace clk.Views
                 
                 indent = 0;
                 if (yPos == 2)
-                    cursor();
+                    EyeCandy.cursor();
                 else
                     indent = 2;
                 
@@ -258,7 +217,7 @@ namespace clk.Views
                 
                 indent = 0;
                 if (yPos == brChk + br)
-                    cursor();
+                    EyeCandy.cursor();
                 else
                     indent = 2;
                 
@@ -278,7 +237,7 @@ namespace clk.Views
                     
                     indent = 0;
                     if (yPos == brChk + br)
-                        cursor(2);
+                        EyeCandy.cursor(2);
                     else
                         indent = 4;
                     
@@ -325,7 +284,7 @@ namespace clk.Views
                 
                 int indent = 0;
                 if (yPos-startPos == br)
-                    cursor();
+                    EyeCandy.cursor();
                 else
                     indent = 2;
                 
@@ -463,3 +422,7 @@ namespace clk.Views
         }
     }
 }
+
+
+
+

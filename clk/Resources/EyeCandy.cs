@@ -76,5 +76,46 @@ namespace clk.Resources
                 return true;
             return false;
         }
+        
+        /// <summary>
+        /// The cursor used to inform the user where he is on the board.
+        /// </summary>
+        /// <param name="indent">Characters to indent (if you want)</param>
+        public static void cursor(int indent = 0)
+        {
+            color("cyan");
+            Console.Write(EyeCandy.indent(indent) + "> ");
+            reset();
+        }
+
+        /// <summary>
+        /// Used to print out the list headlines.
+        /// Prints out the top of a box-ish kinda thing.
+        /// </summary>
+        /// <param name="boxSize">The size of the box (character spaces)</param>
+        public static void boxTop(int boxSize)
+        {
+            Console.Write(indent(2) + "╔");
+            for (int i = 0; i < boxSize-2; i++)
+            {
+                Console.Write("═");
+            }
+            Console.Write("╗");
+        }
+
+        /// <summary>
+        /// Used to print out the bottom of the list headlines.
+        /// Prints outthe bottom of the box thingy.
+        /// </summary>
+        /// <param name="boxSize">The size of the box.</param>
+        public static void boxBottom(int boxSize)
+        {
+            Console.Write(indent(2) + "╚");
+            for (int i = 0; i < boxSize-2; i++)
+            {
+                Console.Write("═");
+            }
+            Console.Write("╝");
+        }
     }
 }
