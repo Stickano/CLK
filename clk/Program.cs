@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.Remoting.Messaging;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Policy;
 using clk.Controllers;
 using clk.Models;
 using clk.Resources;
@@ -15,8 +17,8 @@ namespace clk
 {
     internal class Program
     {
-        private static string restUrl = "http://localhost:50066/Service1.svc/";
-        //public static string restUrl = "http://easj-final.azurewebsites.net/Service1.svc/";
+        //private static string restUrl = "http://localhost:50066/Service1.svc/";
+        public static string restUrl = "http://easj-final.azurewebsites.net/Service1.svc/";
         
         public static Profile user = new Profile();
 
@@ -1122,7 +1124,8 @@ namespace clk
             {
                 try
                 {
-                    string c = rest.post(user, "board/addmember/" + boardId + "/"+mail);
+                    var url = Path.Combine("board/addmember/" + boardId + "/" + mail);
+                    string c = rest.post(user, url);
                     if (c.Equals("-1"))
                     {
                         Console.WriteLine("Something went wrong. Are you sure, that the requested email is a registered member?");
