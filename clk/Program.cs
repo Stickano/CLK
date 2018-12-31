@@ -143,7 +143,7 @@ namespace clk
                     dbGetBoard(arg.value);
                 
                 if (arg.key.Equals("--cloud-boards"))
-                    dbGetAllBoards();
+                    cloudBoards();
                 
                 if (arg.key.Equals("--label"))
                     setLabel(arg.value);
@@ -168,8 +168,11 @@ namespace clk
                 
                 if (arg.key.Equals("--del-comment"))
                     deleteComment(arg.value);
-                
-                
+
+                if (arg.key.Equals("--add-member"))
+                    addMember(arg.value);
+
+
                 /*if (arg.key.Equals(""))
                     method(arg.value);*/
             }
@@ -964,8 +967,6 @@ namespace clk
             // Make sure we have a password
             if (user.password == null)
                 write.error("Missing a password argument.");
-
-            Console.WriteLine(user.password);
             
             RestClient rest = new RestClient(restUrl);
 
@@ -1042,10 +1043,16 @@ namespace clk
             Console.WriteLine("Saved board to the cloud: " + bc.name);
         }
 
+        /// <summary>
+        /// This is the method, that is called from the arguments.
+        /// It will further call the dbGetAllBoards(), but this will 
+        /// print out a little info to the terminal as well.
+        /// </summary>
         private static void cloudBoards()
         {
             List<BoardController> response = dbGetAllBoards();
             int br = 1;
+            Console.WriteLine();
             Console.WriteLine("Available boards from the clouds:");
             foreach (BoardController bc in response)
             {
@@ -1075,25 +1082,109 @@ namespace clk
             return response;
         }
 
+        /// <summary>
+        /// Receive a specific board from the clouds.
+        /// </summary>
+        /// <param name="args">User inputs (args from controller)</param>
         private static void dbGetBoard(List<string> args)
         {
-            //IList<BoardController> boardsAvail = dbGetAllBoards();
-
-            // TODO: Loop through all selections
-
-            // TODO: tryparse
-            /*int selection = int.Parse(argController.getKeyVal()["--cloud-get"].First());
-            selection--;*/
-
-            //if (boardsAvail[selection] == null)
-            //    return;
-
+            List<BoardController> boardsAvail = dbGetAllBoards();
             RestClient rest = new RestClient(restUrl);
-            string c = rest.post(user, "board/get/54f22eff-94d5-4d31-83ec-b1fb815e3c4a");
-            Console.WriteLine(c);
+
+            Console.WriteLine();
+            Console.WriteLine("Receiving board(s) from the clouds:");
+            foreach (string s in args)
+            {
+                if (!Validators.isInt(s))
+                    continue;
+
+                if (!Validators.inList(boardsAvail, int.Parse(s)))
+                    write.error("The selected board was not available.");
+
+                string c = rest.post(user, "board/get/" + boardsAvail[int.Parse(s)].id);
+                BoardController bc = JsonConvert.DeserializeObject<BoardController>(c);
+                createBoardFromDb(bc);
+                Console.WriteLine("Saved board to disc: " + bc.name);
+            }
+        }
+
+        /// <summary>
+        /// Add new members to a board.
+        /// </summary>
+        /// <param name="args"></param>
+        private static void addMember(List<string> args)
+        {
+            RestClient rest = new RestClient(restUrl);
+
+            Console.WriteLine();
+            Console.WriteLine("Adding member(s) to board: " + boardName);
+            foreach (string mail in args)
+            {
+                try
+                {
+                    string c = rest.post(user, "board/addmember/" + boardId + "/"+mail);
+                    if (c.Equals("-1"))
+                    {
+                        Console.WriteLine("Something went wrong. Are you sure, that the requested email is a registered member?");
+                        continue;
+                    }
+
+                    Console.WriteLine("Added to board: " + mail);
+                }
+                catch (Exception e)
+                {
+                    write.error(e.Message);
+                }
+            }
+            
         }
 
         #endregion
+
+        /// <summary>
+        /// This will, most like from db, create a board with all its content,
+        /// from a board controller.
+        /// </summary>
+        /// <param name="bc">The boardcontroller that holds the board info</param>
+        private static void createBoardFromDb(BoardController bc)
+        {
+            OverviewController oc = new OverviewController();
+            ListController lc = new ListController(bc.id);
+            CardController cc = new CardController();
+
+            // Create the board
+            oc.createBoard(bc.name, bc.id, bc.created);
+
+            // Create all the lists
+            foreach (List list in bc.lists)
+            {
+                lc.createList(list.name, list.created, list.id);
+            }
+
+            // Create all the cards
+            foreach (Card card in bc.cards)
+            {
+                cc.createCard(card.name, card.created, card.id, card.description);
+            }
+
+            // Create all the checklists
+            foreach (Checklist checklist in bc.checklists)
+            {
+                cc.createChecklist(checklist.name, checklist.cardId, checklist.created, checklist.id);
+            }
+
+            // Create all the checklists points
+            foreach (ChecklistPoint point in bc.points)
+            {
+                cc.createChecklistPoint(point.name, point.checklistId, point.id, point.created, point.isCheck);
+            }
+
+            // Create all comments
+            foreach (Comment comment in bc.comments)
+            {
+                cc.createComment(comment.comment, comment.cardId, comment.created, comment.id);
+            }
+        }
            
     }
 }

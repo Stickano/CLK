@@ -10,8 +10,8 @@ namespace clk.Controllers
     {
         public string listId { get; }
         
-        public List<Card> cards { get; }
-        public List<Comment> comments { get; }
+        public List<Card> cards { get; private set; }
+        public List<Comment> comments { get; private set; }
         public List<Checklist> checklists { get; set; }
         public List<ChecklistPoint> points { get; set; }
         
@@ -34,16 +34,32 @@ namespace clk.Controllers
         public CardController(string listId)
         {
             this.listId = listId;
-            
+            iniModels();
+        }
+
+        /// <summary>
+        /// There's a few methods that doesn't require the list id to be set.
+        /// Those are available by just initializing this controller without an ID.
+        /// </summary>
+        public CardController()
+        {
+            iniModels();
+        }
+
+        /// <summary>
+        /// This will initialize the required models for this controller.
+        /// </summary>
+        private void iniModels()
+        {
             cardJson = new Json(cardJsonFile);
             cards = cardJson.readFile<Card>();
-            
+
             commentJson = new Json(commentJsonFile);
             comments = commentJson.readFile<Comment>();
-            
-            checklistJson= new Json(checklistJsonFile);
+
+            checklistJson = new Json(checklistJsonFile);
             checklists = checklistJson.readFile<Checklist>();
-            
+
             pointJson = new Json(pointJsonFile);
             points = pointJson.readFile<ChecklistPoint>();
         }
@@ -65,6 +81,24 @@ namespace clk.Controllers
             cardJson.writeFile(cards);
 
             return id;
+        }
+
+        /// <summary>
+        /// This will also create a card, but an already exisiting one (From db i.e.)
+        /// It see if the card already exisits, and remove it if so.
+        /// </summary>
+        /// <param name="cardName">The name of the card</param>
+        /// <param name="created">Creation of the card</param>
+        /// <param name="id">The ID of the card</param>
+        /// <param name="description">Description for the card, if any</param>
+        public void createCard(string cardName, string created, string id, string description = "")
+        {
+            if (cards.Any(x => x.id == id))
+                cards.RemoveAll(x => x.id == id);
+
+            Card c = new Card(id, cardName, created, listId);
+            cards.Add(c);
+            cardJson.writeFile(cards);
         }
 
         /// <summary>
@@ -93,6 +127,28 @@ namespace clk.Controllers
         }
 
         /// <summary>
+        /// Creates an already exisiting comment (from db).
+        /// </summary>
+        /// <param name="comment">The comment</param>
+        /// <param name="cardId">The ID of the card, where the comment resides</param>
+        /// <param name="created">Comment created timestamp</param>
+        /// <param name="id">The ID of the comment</param>
+        public void createComment(string comment, string cardId, string created, string id)
+        {
+            if (comments.Any(x => x.id == id))
+                comments.RemoveAll(x => x.id == id);
+
+            Comment c = new Comment();
+            c.id = id;
+            c.created = created;
+            c.cardId = cardId;
+            c.comment = comment;
+
+            comments.Add(c);
+            commentJson.writeFile(comments);
+        }
+
+        /// <summary>
         /// This will create a checklist for a card.
         /// </summary>
         /// <param name="name">The name of the checklist</param>
@@ -107,6 +163,23 @@ namespace clk.Controllers
 
             return id;
         }
+
+        /// <summary>
+        /// Creates a checklist that already exists (from db ie)
+        /// </summary>
+        /// <param name="name">The name of the checklist</param>
+        /// <param name="cardId">The ID of the card, where the checklist resides</param>
+        /// <param name="created">Timestamp of creation for the checklist</param>
+        /// <param name="id">The ID of the checklist</param>
+        public void createChecklist(string name, string cardId, string created, string id)
+        {
+            if (checklists.Any(x => x.id == id))
+                checklists.RemoveAll(x => x.id == id);
+
+            Checklist c = new Checklist(id, name, cardId, created);
+            checklists.Add(c);
+            checklistJson.writeFile(checklists);
+        }
         
         /// <summary>
         /// This will create a point in a checklist.
@@ -119,6 +192,24 @@ namespace clk.Controllers
             string id = Random.guid();
             
             points.Add(new ChecklistPoint(description, id, checklistId, created));
+            pointJson.writeFile(points);
+        }
+
+        /// <summary>
+        /// Creates an already exisiting checklist point (from db ie)
+        /// </summary>
+        /// <param name="description">The description (name) of the point</param>
+        /// <param name="checklistId">The ID of the checklist, where the point resides</param>
+        /// <param name="id">The ID of the point</param>
+        /// <param name="created">The timestamp when the point was created</param>
+        /// <param name="marked">If the point is checked or not</param>
+        public void createChecklistPoint(string description, string checklistId, string id, string created, bool marked)
+        {
+            if (points.Any(x => x.id == id))
+                points.RemoveAll(x => x.id == id);
+
+            ChecklistPoint c = new ChecklistPoint(description, id, checklistId, created, marked);
+            points.Add(c);
             pointJson.writeFile(points);
         }
 

@@ -50,6 +50,22 @@ namespace clk.Controllers
         }
 
         /// <summary>
+        /// This will create an already exisiting board (from db ie)
+        /// </summary>
+        /// <param name="name">The name of the board</param>
+        /// <param name="id">The ID of the board</param>
+        /// <param name="created">The timestamp of creation</param>
+        public void createBoard(string name, string id, string created)
+        {
+            if (boards.Any(x => x.id == id))
+                boards.RemoveAll(x => x.id == id);
+
+            Board b = new Board(id, name, created);
+            boards.Add(b);
+            json.writeFile(boards);
+        }
+
+        /// <summary>
         /// Since the only thing you're able to change on a board
         /// is the name, just the name and the board ID is needed.
         /// </summary>

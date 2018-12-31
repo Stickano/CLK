@@ -30,6 +30,11 @@ namespace clk.Controllers
             iniJsonAndLists();
         }
 
+        /// <summary>
+        /// Initialize the controller with a board id,
+        /// to autmatically populate lists, cards, checklists etc.
+        /// </summary>
+        /// <param name="boardId">The ID of the board to initialize this controller for.</param>
         public BoardController(string boardId)
         {
             id= boardId;
@@ -43,6 +48,10 @@ namespace clk.Controllers
             populateLists();
         }
 
+        /// <summary>
+        /// Initialize the minimum required for this controller.
+        /// Will be read by each Constructor.
+        /// </summary>
         private void iniJsonAndLists()
         {
 

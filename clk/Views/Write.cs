@@ -237,6 +237,7 @@ namespace clk.Views
             EyeCandy.color();
             Console.Write(message);
             Console.WriteLine();
+            EyeCandy.reset();
             Environment.Exit(0);
         }
         
