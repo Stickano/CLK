@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.Remoting.Messaging;
 using System.Security.Cryptography.X509Certificates;
@@ -173,6 +174,9 @@ namespace clk
 
                 if (arg.key.Equals("--add-member"))
                     addMember(arg.value);
+
+                if (arg.key.Equals("--board-info"))
+                    boardInfo();
 
 
                 /*if (arg.key.Equals(""))
@@ -1139,7 +1143,33 @@ namespace clk
                     write.error(e.Message);
                 }
             }
-            
+        }
+
+        /// <summary>
+        /// Receive all members for a board.
+        /// It will get members from the selected board (-b)
+        /// </summary>
+        /// <returns>A List of BoardMember (mail, uname, bid, uid)</returns>
+        private static List<BoardMember> getMembers()
+        {
+            RestClient rest = new RestClient(restUrl);
+            List<BoardMember> members = new List<BoardMember>();
+            Console.WriteLine(user.id);
+            Console.WriteLine(boardId);
+            try
+            {
+                Console.WriteLine(user.id);
+                var url = Path.Combine("board/getmembers/" + boardId);
+                string c = rest.post(user, url);
+                Console.WriteLine(c);
+                members = JsonConvert.DeserializeObject<List<BoardMember>>(c);
+            }
+            catch (Exception e)
+            {
+                write.error(e.Message);
+            }
+
+            return members;
         }
 
         #endregion
@@ -1188,6 +1218,43 @@ namespace clk
                 cc.createComment(comment.comment, comment.cardId, comment.created, comment.id);
             }
         }
-           
+
+        /// <summary>
+        /// This will print out all the information, that might seem valuable to the user.
+        /// It will print the name of the board, when it was created and its ID.
+        /// It will also print out how many lists, cards and checklist the board has.
+        /// Also how many points, and how many of those points is checked as complete.
+        /// Lastly it will print out the board members, if logged in and any members found.
+        /// </summary>
+        private static void boardInfo()
+        {
+            BoardController b = new BoardController(boardId);
+
+            Console.WriteLine();
+            Console.WriteLine(boardName);
+            Console.WriteLine("Created on: " + b.created);
+            Console.WriteLine("Board ID: " + boardId);
+
+            Console.WriteLine();
+            Console.WriteLine("Has " + b.lists.Count + "lists,");
+            Console.WriteLine("with " + b.cards.Count + " cards,");
+            Console.WriteLine("and " +b.checklists.Count + " checklists.");
+            Console.WriteLine("There is also " + b.comments.Count + " comments in this board.");
+
+            Console.WriteLine();
+            Console.WriteLine("Out of " + b.points.Count + " created points, " + b.points.Count(x => x.isCheck) + " is checked as complete.");
+
+            List<BoardMember> members = new List<BoardMember>();
+            members = getMembers();
+
+            if (members.Any())
+            {
+                Console.WriteLine("Board members:");
+                foreach (BoardMember m in members)
+                {
+                    Console.WriteLine(EyeCandy.indent(2) + m.email);
+                }
+            }
+        }
     }
 }

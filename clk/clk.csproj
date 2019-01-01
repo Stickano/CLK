@@ -52,6 +52,7 @@
     <Compile Include="Controllers\OverviewController.cs" />
     <Compile Include="Models\Argument.cs" />
     <Compile Include="Models\Board.cs" />
+    <Compile Include="Models\BoardMember.cs" />
     <Compile Include="Models\Card.cs" />
     <Compile Include="Models\Checklist.cs" />
     <Compile Include="Models\ChecklistPoint.cs" />
