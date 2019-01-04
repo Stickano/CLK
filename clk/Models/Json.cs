@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.IsolatedStorage;
+using clk.Controllers;
 using Newtonsoft.Json;
 
 namespace clk.Models
@@ -76,6 +77,47 @@ namespace clk.Models
                 File.Create("Json/checklists.json").Close();
             if (!File.Exists("Json/points.json"))
                 File.Create("Json/points.json").Close();
+            if (!File.Exists("Json/settings.json"))
+                File.Create("Json/settings.json").Close();
+        }
+
+        /// <summary>
+        /// A method to store the user profile on the disc.
+        /// Used for auto-login to the cloud.
+        /// </summary>
+        /// <param name="profile">The profile to store.</param>
+        public static void storeProfileDetails(Profile profile)
+        {
+            // Make sure we have uname, pw and id.
+            if (profile.id == null || profile.email == null || profile.password == null)
+                return;
+            
+            // Write the profile to the Json file.
+            writeFile(profile, "profile.json");
+        }
+
+        /// <summary>
+        /// Another method to write a Json file,
+        /// this one accepts a single object, instead of a list of objects.
+        /// This is used to write the settings json i.e.
+        /// </summary>
+        /// <param name="obj">The object to write</param>
+        /// <param name="file">Which file to write to</param>
+        /// <typeparam name="T">Any object. SettingsController is used i.e.</typeparam>
+        public static void writeFile<T>(T obj, string file)
+        {
+            string jsonDir = "Json/";
+            var path = Path.Combine(jsonDir + file);
+            
+            // Create file, if it doesn't already exists
+            if (!File.Exists(path))
+                File.Create(path).Close();
+            
+            using (StreamWriter writer = File.CreateText(path))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Serialize(writer, obj);
+            }
         }
     }
 }

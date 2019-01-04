@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace clk.Models
 {
-    class Profile
+    public class Profile
     {
         public string email { get; set; }
         public string password { get; set; }

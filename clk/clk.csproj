@@ -50,6 +50,7 @@
     <Compile Include="Controllers\CardController.cs" />
     <Compile Include="Controllers\ListController.cs" />
     <Compile Include="Controllers\OverviewController.cs" />
+    <Compile Include="Controllers\SettingsController.cs" />
     <Compile Include="Models\Argument.cs" />
     <Compile Include="Models\Board.cs" />
     <Compile Include="Models\BoardMember.cs" />
