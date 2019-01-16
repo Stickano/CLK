@@ -88,8 +88,12 @@ namespace clk
 
                     if (!cardsToRead.Any())
                         controls.yPos = 0;
+
+                    int range = 3;
+                    if (liController.getLists().Count < 3)
+                        range = liController.getLists().Count;
                     
-                    write.writeList(liController.getLists().GetRange(startPos, 3), controls.xPos, controls.yPos, startPos, cardsToRead);
+                    write.writeList(liController.getLists().GetRange(startPos, range), controls.xPos, controls.yPos, startPos, cardsToRead);
                     //write.writeLists(liController.getLists(), startPos, controls.xPos, controls.yPos, cardsToRead);
                 }
                 

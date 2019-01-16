@@ -1029,6 +1029,9 @@ namespace clk
         {
             iniOvController();
 
+            if (!Validators.inList(ovController.getBoards(), boardNum))
+                write.error("The selected board was not available. Use -b to select a board.");
+
             // Gather the information needed for the http request
             BoardController bc = new BoardController(boardId);
 
