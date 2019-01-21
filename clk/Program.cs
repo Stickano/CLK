@@ -1018,7 +1018,8 @@ namespace clk
 
             if (user.id == null)
                 write.error("Username or password was incorrect.");
-            
+
+            Console.WriteLine(user.id);
             Console.WriteLine("Successfully logged into: " + user.email);
         }
 
@@ -1034,19 +1035,20 @@ namespace clk
 
             bc.userId = user.id;
             bc.password = user.password;
-
+            Console.WriteLine(bc.userId);
             RestClient rest = new RestClient(restUrl);
 
             try
             {
-                rest.post(bc, "board/save");
+                if(rest.post(bc, "board/save").Equals("1"))
+                    Console.WriteLine("Saved board to the cloud: " + bc.name);
+                else
+                    write.error("Something went wrong. Are you logged in?");
             }
             catch (Exception e)
             {
                 write.error(e.Message);
             }
-
-            Console.WriteLine("Saved board to the cloud: " + bc.name);
         }
 
         /// <summary>
