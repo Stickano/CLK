@@ -213,6 +213,9 @@ namespace clk
             if (args.Count != 1)
                 write.error("You can only work on 1 checklist at the time.");
 
+            if (!int.TryParse(args.FirstOrDefault(), out checkNum))
+                return;
+
             checkNum = int.Parse(args.FirstOrDefault());
 
             iniOvController();
