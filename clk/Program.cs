@@ -21,7 +21,7 @@ namespace clk
     {
         //private static string restUrl = "http://localhost:50066/Service1.svc/";
         public static string restUrl = "http://easj-final.azurewebsites.net/Service1.svc/";
-        
+
         public static Profile user = new Profile();
         private static SettingsController settings;
 
@@ -39,7 +39,7 @@ namespace clk
         public static int cardNum = -1;
         public static int checkNum = -1;
         public static int pointNum = -1;
-        
+
         // When the values are matches to an index,
         // The name and id of those elements will be defined.
         public static string boardId;
@@ -60,31 +60,33 @@ namespace clk
 
         public static void Main(string[] args)
         {
-            
+
             Console.Clear();
-            
+
             // Check that we have Json files
             Json.isFiles();
-            
+
             // Controller for the arguments, and a "view" kinda object.
             write = new Write();
             argController = new ArgumentController(args);
             settings = new SettingsController();
-            
+
             // Write top logo
             if (argController.isCard)
                 Ascii.clkCard();
             else if (argController.isList)
                 Ascii.clkList();
-            else if (argController.isBoard 
+            else if (argController.isBoard
                      && argController.argList.Find(x => x.key == "-b").value.Any())
                 Ascii.clkBoard();
             else if (argController.isBoard)
                 Ascii.clkBoards();
             else
                 Ascii.clk();
-            
-            
+
+            // Mainly auto logon, if available
+            setSettingsValues();
+
             // Continuous running
             if (!args.Any())
             {
@@ -96,82 +98,82 @@ namespace clk
             // Send the merry argument on its way to its corresponding method
             foreach (Argument arg in argController.argList)
             {
-                
+
                 if (arg.key.Equals("-h"))
                     About.usage();
-                
+
                 if (arg.key.Equals("-b"))
                     getBoards(arg.value);
-                
+
                 if (arg.key.Equals("-l"))
                     getCards(arg.value);
-                
-                if (arg.key.Equals("-c")) 
+
+                if (arg.key.Equals("-c"))
                     getCard(arg.value);
-                
+
                 if (arg.key.Equals("-p"))
                     setChecklist(arg.value);
-                
+
                 if (arg.key.Equals("--point"))
                     clickPoint(arg.value);
-                
+
                 if (arg.key.Equals("--comment"))
                     createComment(arg.value);
-                
+
                 if (arg.key.Equals("--description"))
                     createDescription(arg.value);
-                
+
                 if (arg.key.Equals("--new-board"))
                     createBoard(arg.value);
-                
+
                 if (arg.key.Equals("--new-list"))
                     createList(arg.value);
-                
+
                 if (arg.key.Equals("--new-card"))
                     createCard(arg.value);
-                
+
                 if (arg.key.Equals("--new-check"))
                     createChecklist(arg.value);
-                
+
                 if (arg.key.Equals("--new-point"))
                     createChecklistPoint(arg.value);
-                
+
                 if (arg.key.Equals("--new-profile"))
                     createProfile();
-                
+
                 if (arg.key.Equals("--login"))
                     login();
-                
+
                 if (arg.key.Equals("--cloud-save"))
                     saveBoard();
-                
+
                 if (arg.key.Equals("--cloud-get"))
                     dbGetBoard(arg.value);
-                
+
                 if (arg.key.Equals("--cloud-boards"))
                     cloudBoards();
-                
+
                 if (arg.key.Equals("--label"))
                     setLabel(arg.value);
-                
+
                 if (arg.key.Equals("--edit"))
                     edit(arg.value);
-                
+
                 if (arg.key.Equals("--del-board"))
                     deleteBoard(arg.value);
-                
+
                 if (arg.key.Equals("--del-list"))
                     deleteList(arg.value);
-                
+
                 if (arg.key.Equals("--del-card"))
                     deleteCard(arg.value);
-                
+
                 if (arg.key.Equals("--del-check"))
                     deleteChecklist(arg.value);
-                
+
                 if (arg.key.Equals("--del-point"))
                     deletePoint(arg.value);
-                
+
                 if (arg.key.Equals("--del-comment"))
                     deleteComment(arg.value);
 
@@ -188,7 +190,7 @@ namespace clk
                 /*if (arg.key.Equals(""))
                     method(arg.value);*/
             }
-            
+
             // Write the output for the selection
             // TODO: Casts exceptions on first creations of elements (no elements in lists).
             Console.WriteLine();
@@ -198,10 +200,24 @@ namespace clk
                 write.allCards(caController.getCards());
             else if (argController.isBoard && isBoard)
                 write.allLists(liController.getLists());
-            
+
             write.commentDestination();
         }
-        
+
+        /// <summary>
+        /// This will be read relativly early, defining the chosen settings.
+        /// Mainly, currently, auto logon.
+        /// </summary>
+        private static void setSettingsValues()
+        {
+            if (settings.autoLoginPossible())
+            {
+                user.email = settings.getCredencials();
+                user.password = settings.getCredencials(true);
+                login();
+            }
+        }
+
         /// <summary>
         /// If --p is incl. this will run.
         /// It will set the selected checklist,
@@ -215,7 +231,7 @@ namespace clk
 
             if (!Validators.isInt(args.FirstOrDefault()))
                 return;
-            
+
             if (args.Count != 1)
                 write.error("You can only work on 1 checklist at the time.");
 
@@ -227,16 +243,16 @@ namespace clk
             iniOvController();
             iniLiController(boardId);
             iniCaController(listId);
-            
+
             if (!isCheck)
                 write.error("The selected checklist was not valid.");
-            
-            
+
+
         }
 
 
         #region Delete methods for Board, lists, checklists, points and comments
-        
+
         /// <summary>
         /// If --del-board is incl. this is run.
         /// It will set a board to inactive (delete)
@@ -246,12 +262,12 @@ namespace clk
         {
             // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
-            
+
             foreach (var val in args)
             {
                 if (!Validators.isInt(val))
                     continue;
-                
+
                 if (!Validators.inList(ovController.getBoards(), int.Parse(val)))
                     write.error("The selected board was not valid.");
 
@@ -260,7 +276,7 @@ namespace clk
 
                 if (!write.confirmDelete(name))
                     return;
-                
+
                 ovController.deleteBoard(b.id);
                 Console.WriteLine("Deleted list: " + name);
             }
@@ -275,24 +291,24 @@ namespace clk
         {
             // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
-            
+
             if (!isBoard)
                 write.error("The selected board was not valid.");
-            
+
             foreach (var val in args)
             {
                 if (!Validators.isInt(val))
                     continue;
-                
+
                 if (!Validators.inList(liController.getLists(), int.Parse(val)))
                     write.error("The selected list was not valid.");
 
                 List l = liController.getLists()[int.Parse(val)];
                 string name = l.name;
-                
+
                 if (!write.confirmDelete(name))
                     return;
-                
+
                 liController.deleteList(l.id);
                 Console.WriteLine("Deleted list: " + name);
             }
@@ -308,24 +324,24 @@ namespace clk
             // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
             iniLiController(boardId);
-            
+
             if (!isList)
                 write.error("The selected list was not valid.");
-            
+
             foreach (var val in args)
             {
                 if (!Validators.isInt(val))
                     continue;
-                
+
                 if (!Validators.inList(caController.getCards(), int.Parse(val)))
                     write.error("The selected card was not valid.");
 
                 Card c = caController.getCards()[int.Parse(val)];
                 string name = c.name;
-                
+
                 if (!write.confirmDelete(name))
                     return;
-                
+
                 caController.deleteCard(c.id);
                 Console.WriteLine("Deleted card: " + name);
             }
@@ -342,24 +358,24 @@ namespace clk
             iniOvController();
             iniLiController(boardId);
             iniCaController(listId);
-            
+
             if (!isCard)
                 write.error("The selected card was not valid.");
-            
+
             foreach (var val in args)
             {
                 if (!Validators.isInt(val))
                     continue;
-                
+
                 if (!Validators.inList(caController.getChecklists(cardId), int.Parse(val)))
                     write.error("The selected checklist was not valid.");
 
                 Checklist c = caController.getChecklists(cardId)[int.Parse(val)];
                 string name = c.name;
-                
+
                 if (!write.confirmDelete(name))
                     return;
-                
+
                 caController.deleteChecklist(c.id);
                 Console.WriteLine("Deleted checklist: " + name);
             }
@@ -376,24 +392,24 @@ namespace clk
             iniOvController();
             iniLiController(boardId);
             iniCaController(listId);
-            
+
             if (!isCard)
                 write.error("The selected card was not valid.");
-            
+
             foreach (var val in args)
             {
                 if (!Validators.isInt(val))
                     continue;
-                
+
                 if (!Validators.inList(caController.getChecklistPointsInCard(cardId), int.Parse(val)))
                     write.error("The selected checklist point was not valid.");
 
                 ChecklistPoint p = caController.getChecklistPointsInCard(cardId)[int.Parse(val)];
                 string name = p.name;
-                
+
                 if (!write.confirmDelete(name))
                     return;
-                
+
                 caController.deletePoint(p.id);
                 Console.WriteLine("Deleted point: " + name);
             }
@@ -410,35 +426,35 @@ namespace clk
             iniOvController();
             iniLiController(boardId);
             iniCaController(listId);
-            
+
             if (!isCard)
                 write.error("The selected card was not valid.");
-            
+
             foreach (var val in args)
             {
                 if (!Validators.isInt(val))
                     continue;
-                
+
                 if (!Validators.inList(caController.getComments(cardId), int.Parse(val)))
                     write.error("The selected comment was not valid.");
 
                 Comment c = caController.getComments(cardId)[int.Parse(val)];
                 string date = c.created;
-                
+
                 if (!write.confirmDelete(date))
                     return;
-                
+
                 caController.deleteComment(c.id);
                 Console.WriteLine("Deleted comment, created on: " + date);
             }
         }
 
         #endregion
-        
-        
+
+
         #region Update methods for Board, List, Card and Checklist (missing point atm)
-       
-        
+
+
         /// <summary>
         /// If --point is incl. this will run.
         /// It will check/uncheck a point in a checklist -
@@ -447,21 +463,21 @@ namespace clk
         /// <param name="keyVal">KeyVal args from ToLookup (method in argument controller)</param>
         private static void clickPoint(List<string> args)
         {
-            
+
             foreach (var val in args)
             {
                 if (!Validators.isInt(val))
                     continue;
-                
+
                 // Initialize controllers and validate that the user-inputs are available in their respectful lists
                 iniOvController();
                 iniLiController(boardId);
                 iniCaController(listId);
-            
+
                 if (!Validators.inList(caController.getChecklistPointsInCard(cardId), int.Parse(val)))
                     write.error("The selected point was not valid.");
-            
-            
+
+
                 ChecklistPoint c = caController.getChecklistPointsInCard(cardId)[int.Parse(val)];
                 caController.clickPoint(c.id);
 
@@ -469,6 +485,9 @@ namespace clk
                     Console.WriteLine("Checked point: " + c.name);
                 else
                     Console.WriteLine("Un-checked point: " + c.name);
+
+                if (settings.autoPushToCloud())
+                    pushToCloud(c, "board/updatepoint/");
             }
         }
 
@@ -481,22 +500,28 @@ namespace clk
         {
             if (args.Count != 1)
                 write.error("One 1 label can be assigned per card.");
-            
+
             Label l = new Label();
-            
+
             if (!l.isAvail(args.FirstOrDefault()))
                 write.error("The selected label color was not available (red, green, yellow, blue & cyan).");
 
             l.label = args.FirstOrDefault();
-            
+
             iniOvController();
             iniLiController(boardId);
             iniCaController(listId);
-            
+
             if (!isCard)
                 write.error("The selected card was not available.");
 
             caController.updateLabel(cardId, l);
+
+            if (settings.autoPushToCloud())
+            {
+                Card c = caController.getCards().Find(x => x.id == cardId);
+                pushToCloud(c, "board/updatecard/");
+            }
         }
 
         /// <summary>
@@ -512,7 +537,7 @@ namespace clk
 
             if (args.FirstOrDefault().Equals(""))
                 return;
-            
+
             if (isCheck)
                 editChecklist(args.FirstOrDefault());
             else if (isCard)
@@ -540,6 +565,12 @@ namespace clk
             boardName = name;
             ovController.updateBoard(name, boardId);
             Console.WriteLine("Updated board: " + name);
+
+            if (settings.autoPushToCloud())
+            {
+                //TODO: this..
+                Console.WriteLine("Unfortunately, it is currently not possible to update a board name via REST yet.");
+            }
         }
 
         /// <summary>
@@ -550,13 +581,16 @@ namespace clk
         private static void editList(string name)
         {
             List l = liController.lists.Find(x => x.id == listId);
-            
+
             if (!write.confirmUpdate(l.name, name))
                 return;
-            
+
             listName = name;
             liController.updateList(name, listId);
             Console.WriteLine("Updated list: " + name);
+
+            if (settings.autoPushToCloud())
+                pushToCloud(l, "board/updatelist/");
         }
 
         /// <summary>
@@ -567,13 +601,16 @@ namespace clk
         private static void editCard(string name)
         {
             Card c = caController.cards.Find(x => x.id == cardId);
-            
+
             if (!write.confirmUpdate(c.name, name))
                 return;
 
             cardName = name;
             caController.updateCard(name, cardId);
             Console.WriteLine("Updated card: " + name);
+
+            if (settings.autoPushToCloud())
+                pushToCloud(c, "board/updatecard/");
         }
 
         /// <summary>
@@ -584,19 +621,22 @@ namespace clk
         private static void editChecklist(string name)
         {
             Checklist c = caController.checklists.Find(x => x.id == checkId);
-            
+
             if (!write.confirmUpdate(c.name, name))
                 return;
 
             checkName = name;
             caController.updateChecklist(name, checkId);
             Console.WriteLine("Updated checklist: " + name);
+
+            if (settings.autoPushToCloud())
+                pushToCloud(c, "board/updatechecklist/");
         }
-        
+
 
         #endregion
-        
-        
+
+
         #region Init methods for each BoardController, ListController & CardController
 
         /// <summary>
@@ -612,7 +652,7 @@ namespace clk
             {
                 isBoard = true;
                 boardId = ObjectValues.getValueFromList(ovController.getBoards(), boardNum, "id");
-                boardName = ObjectValues.getValueFromList(ovController.getBoards(), boardNum, "name");    
+                boardName = ObjectValues.getValueFromList(ovController.getBoards(), boardNum, "name");
             }
         }
 
@@ -630,7 +670,7 @@ namespace clk
             {
                 isList = true;
                 listId = ObjectValues.getValueFromList(liController.getLists(), listNum, "id");
-                listName = ObjectValues.getValueFromList(liController.getLists(), listNum, "name");   
+                listName = ObjectValues.getValueFromList(liController.getLists(), listNum, "name");
             }
         }
 
@@ -645,15 +685,15 @@ namespace clk
             caController = new CardController(listId);
             isCard = false;
             isCheck = false;
-            
+
             if (cardNum >= 0 && Validators.inList(caController.getCards(), cardNum))
             {
                 isCard = true;
                 cardId = ObjectValues.getValueFromList(caController.getCards(), cardNum, "id");
-                cardName = ObjectValues.getValueFromList(caController.getCards(), cardNum, "name");    
+                cardName = ObjectValues.getValueFromList(caController.getCards(), cardNum, "name");
             }
 
-            if (isCard 
+            if (isCard
                 && checkNum >= 0
                 && Validators.inList(caController.getChecklists(cardId), checkNum))
             {
@@ -662,10 +702,10 @@ namespace clk
                 checkName = ObjectValues.getValueFromList(caController.getChecklists(cardId), checkNum, "name");
             }
         }
-        
+
         #endregion
 
-        
+
         #region Get methods for Boards, Lists, Cards and Card
 
         /// <summary>
@@ -677,7 +717,7 @@ namespace clk
         {
             // Controller that holds boards
             iniOvController();
-            
+
             if (args.Count == 0)
                 write.allBoards(ovController.getBoards());
             else if (args.Count == 1)
@@ -699,14 +739,14 @@ namespace clk
                 // Make sure it is a numeric value
                 if (!Validators.isInt(arg))
                     continue;
-                
+
                 // Set the boardNum to the selection
                 boardNum = int.Parse(arg);
-                
+
                 // Initialize controllers 
                 iniOvController();
                 iniLiController(boardId);
-        
+
                 if (!isBoard)
                     write.error("The selected board was not valid.");
             }
@@ -720,22 +760,22 @@ namespace clk
         /// </summary>
         private static void getCards(List<string> args)
         {
-            
+
             foreach (string arg in args)
             {
-                
+
                 if (!Validators.isInt(arg))
                     continue;
 
                 listNum = int.Parse(arg);
-                
+
                 // Initialize controllers and validate that the user-inputs are available in their respectful lists
                 iniOvController();
                 iniLiController(boardId);
                 iniCaController(listId);
 
                 if (!isList)
-                    write.error("The selected list was not valid.");   
+                    write.error("The selected list was not valid.");
             }
         }
 
@@ -753,22 +793,46 @@ namespace clk
                     continue;
 
                 cardNum = int.Parse(arg);
-                
+
                 // Initialize controllers and validate that the user-inputs are available in their respectful lists
                 iniOvController();
                 iniLiController(boardId);
                 iniCaController(listId);
-                
+
                 if (!isCard)
                     write.error("The selected card was not valid.");
             }
         }
-        
+
 
         #endregion
-        
-        
+
+
         #region Create methods for Boards, Lists, Cards, Comments, Descriptions, Checklists & points
+
+        /// <summary>
+        /// This will try to store an object to the database, via the REST interface.
+        /// </summary>
+        /// <typeparam name="T">Generic object</typeparam>
+        /// <param name="obj">The object to send to the REST API</param>
+        /// <param name="restQuery">Which URL query to send the request for (board/createlist i.e)</param>
+        private static void pushToCloud<T>(T obj, string restQuery)
+        {
+            RestClient rest = new RestClient(restUrl);
+
+            try
+            {
+                string response = rest.post(obj, restQuery + user.id);
+                if (response.Equals("1"))
+                    Console.WriteLine("Saved to the cloud: " + obj.GetType().GetGenericArguments());
+                else
+                    write.error("Something went wrong. Are you logged in?");
+            }
+            catch (Exception e)
+            {
+                write.error(e.Message);
+            }
+        }
 
         /// <summary>
         /// If --new-board parameter is incl. this is run.
@@ -777,8 +841,8 @@ namespace clk
         /// </summary>
         /// <param name="keyVal">The KeyVal args from the ToLookup</param>
         private static void createBoard(List<string> args)
-        {   
-            
+        {
+
             iniOvController();
             foreach (var val in args)
             {
@@ -788,7 +852,14 @@ namespace clk
                 // Create the board
                 ovController.createBoard(val);
                 Console.WriteLine("Created board: " + val);
-                
+
+                // If auto store to db
+                if (settings.autoPushToCloud())
+                {
+                    boardNum = ovController.getBoards().Count - 1;
+                    saveBoard();
+                }
+
                 // Set a new boardNum val for the latest element
                 boardNum = ovController.getBoards().Count - 1;
             }
@@ -812,15 +883,21 @@ namespace clk
 
             if (!isBoard)
                 write.error("The selected board was not valid.");
-            
+
             // Loop through each of the --new-list and create lists accordingly
             foreach (var val in args)
             {
                 if (val.Equals(""))
                     continue;
-                
+
                 liController.createList(val);
                 Console.WriteLine("Created list : " + val);
+
+                if (settings.autoPushToCloud())
+                {
+                    List l = liController.getLists().Last();
+                    pushToCloud(l, "board/createlist/");
+                }
 
                 listNum = liController.getLists().Count - 1;
             }
@@ -845,12 +922,19 @@ namespace clk
 
             if (!isList)
                 write.error("The selected list was not valid.");
-            
+
             foreach (var val in args)
-            {   
+            {
                 // Create the card
                 caController.createCard(val);
                 Console.WriteLine("Created card: " + val);
+
+
+                if (settings.autoPushToCloud())
+                {
+                    Card c = caController.getCards().Last();
+                    pushToCloud(c, "board/createcard/");
+                }
 
                 cardNum = caController.getCards().Count - 1;
             }
@@ -869,17 +953,23 @@ namespace clk
         {
             if (!args.Any())
                 return;
-            
+
             // Initialize controllers and validate that the user-inputs are available in their respectful lists
             iniOvController();
             iniLiController(boardId);
             iniCaController(listId);
-            
+
             if (!isCard)
                 write.error("The selected card was not valid.");
-            
+
             caController.createDescription(args.FirstOrDefault(), cardId);
             Console.WriteLine("Created description: " + args.FirstOrDefault());
+
+            if (settings.autoPushToCloud())
+            {
+                Card c = caController.getCards().Find(x => x.id == cardId);
+                pushToCloud(c, "board/updatecard/");
+            }
         }
 
         /// <summary>
@@ -898,15 +988,21 @@ namespace clk
 
             if (!isCard)
                 write.error("The selected card was not valid.");
-            
+
             // Loop through and create each comment
             foreach (var val in args)
             {
                 if (val.Equals(""))
                     continue;
-                
+
                 caController.createComment(val, cardId);
                 Console.WriteLine("Created comment: " + val);
+
+                if (settings.autoPushToCloud())
+                {
+                    Comment c = caController.getComments(cardId).Last();
+                    pushToCloud(c, "board/createcomment/");
+                }
             }
         }
 
@@ -925,16 +1021,22 @@ namespace clk
 
             if (!isCard)
                 write.error("The selected card was not valid.");
-            
+
             // Loop through each of the --check and --checkp, and create accordingly
             //string newChecklistId;
             foreach (var val in args)
             {
                 if (val.Equals(""))
                     continue;
-                
+
                 caController.createChecklist(val, cardId);
                 Console.WriteLine("Created checklist: " + val);
+
+                if (settings.autoPushToCloud())
+                {
+                    Checklist c = caController.getChecklists(cardId).Last();
+                    pushToCloud(c, "board/createchecklist/");
+                }
 
                 checkNum = caController.getChecklists(cardId).Count - 1;
             }
@@ -955,20 +1057,26 @@ namespace clk
 
             if (!isCard)
                 write.error("The selected card was not valid.");
-            
+
             if (!Validators.inList(caController.getChecklists(cardId), checkNum))
                 write.error("The selected checklist was not valid.");
-            
+
             foreach (string val in args)
             {
                 caController.createChecklistPoint(val, checkId);
                 Console.WriteLine("Created checklist point: " + val);
+
+                if (settings.autoPushToCloud())
+                {
+                    ChecklistPoint p = caController.getChecklistPointsInCard(cardId).Last();
+                    pushToCloud(p, "board/createpoint/");
+                }
             }
         }
-        
+
 
         #endregion
-        
+
 
         #region Cloud methods
 
@@ -982,7 +1090,7 @@ namespace clk
             // Make sure we have a password
             if (user.password == null)
                 write.error("Missing a password argument.");
-            
+
             RestClient rest = new RestClient(restUrl);
 
             try
@@ -1011,7 +1119,7 @@ namespace clk
                 write.error("Missing a login (password or email) argument.");
 
             RestClient client = new RestClient(restUrl);
-            
+
             try
             {
                 string c = client.post(user, "profile/login");
@@ -1047,7 +1155,7 @@ namespace clk
 
             bc.userId = user.id;
             bc.password = user.password;
-            Console.WriteLine(bc.userId);
+
             RestClient rest = new RestClient(restUrl);
 
             try
@@ -1169,7 +1277,7 @@ namespace clk
         {
             RestClient rest = new RestClient(restUrl);
             List<BoardMember> members = new List<BoardMember>();
-            
+
             try
             {
                 var url = Path.Combine("board/getmembers/" + boardId);
@@ -1250,7 +1358,7 @@ namespace clk
             Console.WriteLine();
             Console.WriteLine("Has " + b.lists.Count + " lists,");
             Console.WriteLine("with " + b.cards.Count + " cards,");
-            Console.WriteLine("and " +b.checklists.Count + " checklists.");
+            Console.WriteLine("and " + b.checklists.Count + " checklists.");
             Console.WriteLine(b.points.Count(x => x.isCheck) + "/" + b.points.Count + " points is checked complete.");
             Console.WriteLine("There is also " + b.comments.Count + " comments in this board.");
 
@@ -1287,7 +1395,7 @@ namespace clk
 
             // The default board value
             string defaultBoard = "not set";
-            if (!settings.defaultBoard().Equals("") 
+            if (!settings.defaultBoard().Equals("")
                 && ovController.getBoards().Any(x => x.id == settings.defaultBoard()))
                 defaultBoard = ovController.getBoards().Find(x => x.id == settings.defaultBoard()).name;
 
@@ -1318,7 +1426,7 @@ namespace clk
             Console.WriteLine("[0] None");
             foreach (Board board in ovController.getBoards())
             {
-                Console.WriteLine("["+br+"] "+board.name);
+                Console.WriteLine("[" + br + "] " + board.name);
                 br++;
             }
             Console.WriteLine("Select the default board (numeric value): ");
@@ -1356,7 +1464,7 @@ namespace clk
                 Console.WriteLine("The credencials for auto logon was removed.");
                 return;
             }
-            
+
             // Ask for credencials, logon and store if logon was possible.
             Console.WriteLine("Credencials for auto logon:");
             Console.WriteLine("Username (email): ");
@@ -1365,7 +1473,7 @@ namespace clk
             string password = Console.ReadLine();
             password = Random.hashString(password);
 
-            Profile p = new Profile {email = mail, password = password};
+            Profile p = new Profile { email = mail, password = password };
             RestClient client = new RestClient(restUrl);
             try
             {
