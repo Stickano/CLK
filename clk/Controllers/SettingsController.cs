@@ -95,6 +95,7 @@ namespace clk.Controllers
         {
             settings.email = "";
             settings.password = "";
+            settings.autoSaveToCloud = false;
             json.writeFile(settings);
         }
 

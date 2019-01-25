@@ -1378,6 +1378,12 @@ namespace clk
             Console.WriteLine();
         }
 
+        /// <summary>
+        /// If --settings is incl. this will run. 
+        /// This will first set the settings that the user choose (arguments),
+        /// and print out the current settings available/set.
+        /// </summary>
+        /// <param name="args">The arguments from the argumentcontroller</param>
         private static void viewSettings(List<string> args)
         {
             iniOvController();
@@ -1454,6 +1460,10 @@ namespace clk
             Console.WriteLine("The default board was set to: " + boardName);
         }
 
+        /// <summary>
+        /// This will store the user credencials to the settings.json file.
+        /// This will confirm the login before storing the data.
+        /// </summary>
         private static void setAutoLogin()
         {
 
