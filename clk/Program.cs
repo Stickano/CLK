@@ -13,6 +13,7 @@ using clk.Models;
 using clk.Resources;
 using clk.Views;
 using Newtonsoft.Json;
+using Random = clk.Resources.Random;
 
 namespace clk
 {
@@ -22,6 +23,7 @@ namespace clk
         public static string restUrl = "http://easj-final.azurewebsites.net/Service1.svc/";
         
         public static Profile user = new Profile();
+        private static SettingsController settings;
 
         public static ArgumentController argController;
         public static OverviewController ovController;
@@ -67,6 +69,7 @@ namespace clk
             // Controller for the arguments, and a "view" kinda object.
             write = new Write();
             argController = new ArgumentController(args);
+            settings = new SettingsController();
             
             // Write top logo
             if (argController.isCard)
@@ -178,6 +181,9 @@ namespace clk
                 if (arg.key.Equals("--board-info"))
                     boardInfo();
 
+                if (arg.key.Equals("--settings"))
+                    viewSettings(arg.value);
+
 
                 /*if (arg.key.Equals(""))
                     method(arg.value);*/
@@ -195,7 +201,7 @@ namespace clk
             
             write.commentDestination();
         }
-
+        
         /// <summary>
         /// If --p is incl. this will run.
         /// It will set the selected checklist,
@@ -1043,7 +1049,8 @@ namespace clk
 
             try
             {
-                if(rest.post(bc, "board/save").Equals("1"))
+                string response = rest.post(bc, "board/save");
+                if (response.Equals("1"))
                     Console.WriteLine("Saved board to the cloud: " + bc.name);
                 else
                     write.error("Something went wrong. Are you logged in?");
@@ -1159,14 +1166,11 @@ namespace clk
         {
             RestClient rest = new RestClient(restUrl);
             List<BoardMember> members = new List<BoardMember>();
-            Console.WriteLine(user.id);
-            Console.WriteLine(boardId);
+            
             try
             {
-                Console.WriteLine(user.id);
                 var url = Path.Combine("board/getmembers/" + boardId);
                 string c = rest.post(user, url);
-                Console.WriteLine(c);
                 members = JsonConvert.DeserializeObject<List<BoardMember>>(c);
             }
             catch (Exception e)
@@ -1241,30 +1245,156 @@ namespace clk
             Console.WriteLine("Board ID: " + boardId);
 
             Console.WriteLine();
-            Console.WriteLine("Has " + b.lists.Count + "lists,");
+            Console.WriteLine("Has " + b.lists.Count + " lists,");
             Console.WriteLine("with " + b.cards.Count + " cards,");
             Console.WriteLine("and " +b.checklists.Count + " checklists.");
+            Console.WriteLine(b.points.Count(x => x.isCheck) + "/" + b.points.Count + " points is checked complete.");
             Console.WriteLine("There is also " + b.comments.Count + " comments in this board.");
-
-            Console.WriteLine();
-            Console.WriteLine("Out of " + b.points.Count + " created points, " + b.points.Count(x => x.isCheck) + " is checked as complete.");
 
             List<BoardMember> members = new List<BoardMember>();
             members = getMembers();
 
             if (members.Any())
             {
+                Console.WriteLine();
                 Console.WriteLine("Board members:");
                 foreach (BoardMember m in members)
                 {
                     Console.WriteLine(EyeCandy.indent(2) + m.email);
                 }
             }
+
+            Console.WriteLine();
         }
 
-        private static void settings(List<string> args)
+        private static void viewSettings(List<string> args)
         {
+            iniOvController();
+
+            foreach (string v in args)
+            {
+                if (v.Equals("1"))
+                    setDefaultBoard();
+                if (v.Equals("2"))
+                    setAutoLogin();
+                if (v.Equals("3"))
+                    changeAutoPushToDb();
+            }
+
+
+            // The default board value
+            string defaultBoard = "not set";
+            if (!settings.defaultBoard().Equals("") 
+                && ovController.getBoards().Any(x => x.id == settings.defaultBoard()))
+                defaultBoard = ovController.getBoards().Find(x => x.id == settings.defaultBoard()).name;
+
+            // Auto login value (email if set)
+            string autoLogin = "not set";
+            if (settings.autoLoginPossible())
+                autoLogin = settings.getCredencials();
+
+            // Auto push to cloud value
+            string autoPush = "False";
+            if (settings.autoPushToCloud())
+                autoPush = "True";
+
+            Console.WriteLine();
+            Console.WriteLine("Available settings:");
+            Console.WriteLine("[1] Default board set         : " + defaultBoard);
+            Console.WriteLine("[2] Auto login                : " + autoLogin);
+            Console.WriteLine("[3] Auto push changes to cloud: " + autoPush);
+        }
+
+        /// <summary>
+        /// Update the default board value for the settings.
+        /// </summary>
+        private static void setDefaultBoard()
+        {
+            int br = 1;
+
+            Console.WriteLine("[0] None");
+            foreach (Board board in ovController.getBoards())
+            {
+                Console.WriteLine("["+br+"] "+board.name);
+                br++;
+            }
+            Console.WriteLine("Select the default board (numeric value): ");
+            string response = Console.ReadLine();
+
+            if (!Validators.isInt(response))
+                return;
+
+            int value = int.Parse(response);
+            value--;
+
+            if (value == -1)
+            {
+                settings.updateDefaultBoard();
+                Console.WriteLine("Default board was set to none.");
+                return;
+            }
+
+            if (!Validators.inList(ovController.getBoards(), value))
+                write.error("The selected board was not valid.");
+
+            string boardId = ObjectValues.getValueFromList(ovController.getBoards(), value, "id");
+            string boardName = ObjectValues.getValueFromList(ovController.getBoards(), value, "name");
+            settings.updateDefaultBoard(boardId);
+            Console.WriteLine("The default board was set to: " + boardName);
+        }
+
+        private static void setAutoLogin()
+        {
+
+            // Remove the credencials, if they are already available.
+            if (settings.autoLoginPossible())
+            {
+                settings.unsetCredencials();
+                Console.WriteLine("The credencials for auto logon was removed.");
+                return;
+            }
             
+            // Ask for credencials, logon and store if logon was possible.
+            Console.WriteLine("Credencials for auto logon:");
+            Console.WriteLine("Username (email): ");
+            string mail = Console.ReadLine();
+            Console.WriteLine("Password: ");
+            string password = Console.ReadLine();
+            password = Random.hashString(password);
+
+            Profile p = new Profile {email = mail, password = password};
+            RestClient client = new RestClient(restUrl);
+            try
+            {
+                string c = client.post(p, "profile/login");
+                Profile response = JsonConvert.DeserializeObject<Profile>(c);
+                if (response.id == null)
+                    write.error("Username or password was incorrect.");
+            }
+            catch (Exception e)
+            {
+                write.error(e.Message);
+            }
+
+            settings.setCredencials(p.email, p.password);
+
+            Console.WriteLine();
+            Console.WriteLine("Auto logon has been set.");
+            Console.WriteLine("To unset it again, just point to the auto logon setting as you've just done.");
+        }
+
+        /// <summary>
+        /// This will change the current value to push changes to cloud automatically. 
+        /// </summary>
+        public static void changeAutoPushToDb()
+        {
+            settings.changeAutoUpdateToCloud();
+
+            string value = "False";
+            if (settings.autoPushToCloud())
+                value = "True";
+
+            Console.WriteLine("Auto push to cloud set to: " + value);
         }
     }
 }

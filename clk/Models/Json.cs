@@ -16,6 +16,7 @@ namespace clk.Models
         public Json(string file)
         {
             this.file = file;
+            this.file = Path.Combine(jsonDir + file);
         }
 
         /// <summary>
@@ -25,7 +26,7 @@ namespace clk.Models
         /// <param name="data">A generic list of content to be written</param>
         public void writeFile<T>(List<T> data)
         {
-            using (StreamWriter writer = File.CreateText(jsonDir + file))
+            using (StreamWriter writer = File.CreateText(file))
             {
                 JsonSerializer serializer = new JsonSerializer();
                 serializer.Serialize(writer, data);
@@ -42,10 +43,10 @@ namespace clk.Models
         public List<T> readFile<T>()
         {
             List<T> result = new List<T>();
-            using (StreamReader read = new StreamReader(jsonDir + file))
+            using (StreamReader read = new StreamReader(file))
             {
                 string json = read.ReadToEnd();
-                if (new FileInfo(jsonDir + file).Length != 0)
+                if (new FileInfo(file).Length != 0)
                     result = JsonConvert.DeserializeObject<List<T>>(json);
             }
 
@@ -84,17 +85,18 @@ namespace clk.Models
         /// <summary>
         /// A method to store the user profile on the disc.
         /// Used for auto-login to the cloud.
+        /// TODO: Don't think I need. Delete this. 
         /// </summary>
         /// <param name="profile">The profile to store.</param>
-        public static void storeProfileDetails(Profile profile)
-        {
-            // Make sure we have uname, pw and id.
-            if (profile.id == null || profile.email == null || profile.password == null)
-                return;
+        //public void storeProfileDetails(Profile profile)
+        //{
+        //    // Make sure we have uname, pw and id.
+        //    if (profile.id == null || profile.email == null || profile.password == null)
+        //        return;
             
-            // Write the profile to the Json file.
-            writeFile(profile, "profile.json");
-        }
+        //    // Write the profile to the Json file.
+        //    writeFile(profile);
+        //}
 
         /// <summary>
         /// Another method to write a Json file,
@@ -104,20 +106,40 @@ namespace clk.Models
         /// <param name="obj">The object to write</param>
         /// <param name="file">Which file to write to</param>
         /// <typeparam name="T">Any object. SettingsController is used i.e.</typeparam>
-        public static void writeFile<T>(T obj, string file)
+        public void writeFile<T>(T obj)
         {
-            string jsonDir = "Json/";
-            var path = Path.Combine(jsonDir + file);
-            
+            string workingFile = this.file;
+            if (!file.Equals(""))
+                workingFile = file;
+
             // Create file, if it doesn't already exists
-            if (!File.Exists(path))
-                File.Create(path).Close();
+            if (!File.Exists(file))
+                File.Create(file).Close();
             
-            using (StreamWriter writer = File.CreateText(path))
+            using (StreamWriter writer = File.CreateText(workingFile))
             {
                 JsonSerializer serializer = new JsonSerializer();
                 serializer.Serialize(writer, obj);
             }
+        }
+
+        /// <summary>
+        /// This will return an object, instead of a list.
+        /// This is used to return settings i.e.
+        /// </summary>
+        /// <typeparam name="T">Generic</typeparam>
+        /// <returns>The Json file as a generic object</returns>
+        public T readFileToObject<T>()
+        {
+            T result = default(T);
+            using (StreamReader read = new StreamReader(file))
+            {
+                string json = read.ReadToEnd();
+                if (new FileInfo(file).Length != 0)
+                    result = JsonConvert.DeserializeObject<T>(json);
+            }
+
+            return result;
         }
     }
 }

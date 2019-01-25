@@ -107,7 +107,7 @@ namespace clk.Controllers
                         key = "-p";
                     
                     
-                    // Notice how deep we are for the "view"
+                    // Notice how "deep" we are in the "view"
                     if (key.Equals("-b"))
                         isBoard = true;
                     if (key.Equals("-l"))
@@ -139,10 +139,13 @@ namespace clk.Controllers
                     || a.key.Equals("--del-card")
                     || a.key.Equals("--del-check")
                     || a.key.Equals("--del-point")
-                    || a.key.Equals("--del-comment")
-                    && Validators.isInt(arg))
-                    value = indexValue(int.Parse(arg));
-                
+                    || a.key.Equals("--del-comment"))
+                {
+                    // This is major braindead.. For some reason I can't make this check in above statement, with a &&. 
+                    if (Validators.isInt(arg))
+                        value = indexValue(int.Parse(arg));
+                }
+
                 // If NOT KEY, but VALUE, add to the Argument value List
                 a.value.Add(value);
                 br++;
