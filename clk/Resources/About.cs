@@ -13,15 +13,15 @@ namespace clk.Resources
         public static void usage()
         { // TODO: Should have a --help [category] kinda' approach.
             Console.WriteLine("This tool is very versatile and the parameters can be combined in a number of ways.");
-            Console.WriteLine("Below information is just to get you started. For more information and usage examples, visit: www.website.com");
+            Console.WriteLine("Below information is just to get you started. For more information and usage examples, visit: https://clkan.xyz");
             Console.WriteLine();
             Console.WriteLine("-h --help      This message");
-            Console.WriteLine("-a --about     Version and program information");
+            //Console.WriteLine("-a --about     Version and program information");
             Console.WriteLine();
             Console.WriteLine("-b --board     Select board");
             Console.WriteLine("-l --list      Select list");
             Console.WriteLine("-c --card      Select card");
-            //Console.WriteLine("-p --check     Select (Points) checklist");
+            Console.WriteLine("-p --check     Select (Points) checklist");
             Console.WriteLine();
             Console.WriteLine("--new-board    Create a new board");
             Console.WriteLine("--new-list     Create a new list");

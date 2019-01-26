@@ -70,6 +70,9 @@ namespace clk
             write = new Write();
             argController = new ArgumentController(args);
             settings = new SettingsController();
+            
+            // Mainly auto logon, if available
+            setSettingsValues();
 
             // Write top logo
             if (argController.isCard)
@@ -83,9 +86,6 @@ namespace clk
                 Ascii.clkBoards();
             else
                 Ascii.clk();
-
-            // Mainly auto logon, if available
-            setSettingsValues();
 
             // Continuous running
             if (!args.Any())
@@ -205,7 +205,7 @@ namespace clk
         }
 
         /// <summary>
-        /// This will be read relativly early, defining the chosen settings.
+        /// This will be read early, defining the chosen settings.
         /// Mainly, currently, auto logon.
         /// </summary>
         private static void setSettingsValues()
@@ -215,6 +215,16 @@ namespace clk
                 user.email = settings.getCredencials();
                 user.password = settings.getCredencials(true);
                 login();
+            }
+
+            if (!settings.defaultBoard().Equals(""))
+            {
+                iniOvController();
+                int index = ovController.getBoards()
+                    .IndexOf(ovController.getBoards().Find(x => x.id == settings.defaultBoard()));
+                
+                argController.isBoard = true;
+                getLists(index.ToString());
             }
         }
 
@@ -721,8 +731,8 @@ namespace clk
             if (args.Count == 0)
                 write.allBoards(ovController.getBoards());
             else if (args.Count == 1)
-                getLists(args);
-            else // TODO: Why you no work?!?!?
+                getLists(args[0]);
+            else
                 write.error("You are only able to work on 1 board at the time.");
         }
 
@@ -732,24 +742,22 @@ namespace clk
         /// The controller is making sure a relevant list of list, for the board,
         /// is returned.
         /// </summary>
-        private static void getLists(List<string> args)
+        private static void getLists(string arg)
         {
-            foreach (string arg in args)
-            {
-                // Make sure it is a numeric value
-                if (!Validators.isInt(arg))
-                    continue;
+            // Make sure it is a numeric value
+            if (!Validators.isInt(arg))
+                return;
 
-                // Set the boardNum to the selection
-                boardNum = int.Parse(arg);
+            // Set the boardNum to the selection
+            boardNum = int.Parse(arg);
 
-                // Initialize controllers 
-                iniOvController();
-                iniLiController(boardId);
+            // Initialize controllers 
+            iniOvController();
+            iniLiController(boardId);
 
-                if (!isBoard)
-                    write.error("The selected board was not valid.");
-            }
+            if (!isBoard)
+                write.error("The selected board was not valid.");
+        
         }
 
         /// <summary>
@@ -1378,6 +1386,9 @@ namespace clk
             Console.WriteLine();
         }
 
+        
+        #region Settings
+
         /// <summary>
         /// If --settings is incl. this will run. 
         /// This will first set the settings that the user choose (arguments),
@@ -1447,7 +1458,7 @@ namespace clk
             if (value == -1)
             {
                 settings.updateDefaultBoard();
-                Console.WriteLine("Default board was set to none.");
+                Console.WriteLine("The default board was set to none.");
                 return;
             }
 
@@ -1517,5 +1528,7 @@ namespace clk
 
             Console.WriteLine("Auto push to cloud set to: " + value);
         }
+
+        #endregion 
     }
 }
