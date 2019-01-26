@@ -223,8 +223,9 @@ namespace clk
                 int index = ovController.getBoards()
                     .IndexOf(ovController.getBoards().Find(x => x.id == settings.defaultBoard()));
                 
-                argController.isBoard = true;
-                getLists(index.ToString());
+                argController.argList.Add(new Argument{key = "-b", value = { index.ToString()}});
+                //argController.isBoard = true;
+                //getLists(index.ToString());
             }
         }
 
