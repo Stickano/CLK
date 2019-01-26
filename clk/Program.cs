@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Runtime.ConstrainedExecution;
-using System.Runtime.Remoting.Messaging;
-using System.Security.Cryptography.X509Certificates;
-using System.Security.Policy;
 using clk.Controllers;
 using clk.Models;
 using clk.Resources;
@@ -60,6 +54,9 @@ namespace clk
 
         public static void Main(string[] args)
         {
+            // Mainly auto logon, if available
+            settings = new SettingsController();
+            string[] argu = setSettingsValues(args);
 
             Console.Clear();
 
@@ -68,13 +65,11 @@ namespace clk
 
             // Controller for the arguments, and a "view" kinda object.
             write = new Write();
-            argController = new ArgumentController(args);
-            settings = new SettingsController();
+            argController = new ArgumentController(argu);
             
-            // Mainly auto logon, if available
-            setSettingsValues();
 
             // Write top logo
+            //TODO: When default board is set, it won't register as board (but instead just the clk logo)
             if (argController.isCard)
                 Ascii.clkCard();
             else if (argController.isList)
@@ -98,7 +93,6 @@ namespace clk
             // Send the merry argument on its way to its corresponding method
             foreach (Argument arg in argController.argList)
             {
-
                 if (arg.key.Equals("-h"))
                     About.usage();
 
@@ -208,7 +202,7 @@ namespace clk
         /// This will be read early, defining the chosen settings.
         /// Mainly, currently, auto logon.
         /// </summary>
-        private static void setSettingsValues()
+        private static string[] setSettingsValues(string[] args)
         {
             if (settings.autoLoginPossible())
             {
@@ -222,11 +216,16 @@ namespace clk
                 iniOvController();
                 int index = ovController.getBoards()
                     .IndexOf(ovController.getBoards().Find(x => x.id == settings.defaultBoard()));
-                
-                argController.argList.Add(new Argument{key = "-b", value = { index.ToString()}});
-                //argController.isBoard = true;
-                //getLists(index.ToString());
+
+                index++; // Will be substracted in argcontroller.
+
+                List<string> ls = args.ToList();
+                ls.Add("-b");
+                ls.Add(index.ToString());
+                args = ls.ToArray();
             }
+
+            return args;
         }
 
         /// <summary>
