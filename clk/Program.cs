@@ -1074,10 +1074,20 @@ namespace clk
         public static void pushToCloud<T>(T obj, string restQuery)
         {
             RestClient rest = new RestClient(restUrl);
+            
+            
+            // Check if board exists in the cloud, otherwise save it first.
+            Board b = JsonConvert.DeserializeObject<Board>(rest.post(user, "board/get/" + boardId));
+            if (b.id.Equals(""))
+            {
+                saveBoard();
+                return;
+            }
 
             try
             {
                 string response = rest.post(obj, restQuery + user.id);
+                //Console.WriteLine(response);
                 if (response.Equals("1"))
                     Console.WriteLine("Saved to the cloud: " + obj.GetType().GetGenericArguments());
                 else
@@ -1437,7 +1447,7 @@ namespace clk
         /// <summary>
         /// Update the default board value for the settings.
         /// </summary>
-        private static void setDefaultBoard()
+        public static void setDefaultBoard()
         {
             int br = 1;
 
@@ -1476,7 +1486,7 @@ namespace clk
         /// This will store the user credencials to the settings.json file.
         /// This will confirm the login before storing the data.
         /// </summary>
-        private static void setAutoLogin()
+        public static void setAutoLogin()
         {
 
             // Remove the credencials, if they are already available.

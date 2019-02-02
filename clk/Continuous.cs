@@ -36,6 +36,10 @@ namespace clk
                 
                 Console.Clear();
 
+                Console.WriteLine(user.email);
+                Console.WriteLine(user.password);
+                Console.WriteLine(user.id);
+                
                 // Write top logo
                 if (isCard)
                     Ascii.clkCard();
@@ -55,6 +59,12 @@ namespace clk
                 // Show settings, if invoked with S
                 if (isSettings)
                 {
+
+                    boardNum = -1;
+                    cardNum = -1;
+                    isBoard = false;
+                    isCard = false;
+                    
                     // The default board value
                     string defaultBoard = "not set";
                     if (!settings.defaultBoard().Equals("")
@@ -141,7 +151,8 @@ namespace clk
 
                 
                 // Display menu
-                write.writeMenu(isBoard, isCard);
+                if (!isSettings)
+                    write.writeMenu(isBoard, isCard);
                 
                 // Ask for user input
                 Console.WriteLine();
@@ -159,6 +170,17 @@ namespace clk
                 {
                     isSettings = true;
                     continue;
+                }
+                
+                // Handle changes in Settings panel
+                if (isSettings)
+                {
+                    if (response == 1 && controls.yPos == 0)
+                        setDefaultBoard();
+                    if(response == 1 && controls.yPos == 1)
+                        setAutoLogin();
+                    if(response == 1 && controls.yPos == 2)
+                        changeAutoPushToDb();
                 }
 
                 // If we selected enter without the board is set,
