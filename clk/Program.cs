@@ -17,7 +17,7 @@ namespace clk
         public static string restUrl = "http://easj-final.azurewebsites.net/Service1.svc/";
 
         public static Profile user = new Profile();
-        private static SettingsController settings;
+        public static SettingsController settings;
 
         public static ArgumentController argController;
         public static OverviewController ovController;
@@ -51,6 +51,7 @@ namespace clk
         public static bool isList;
         public static bool isCard;
         public static bool isCheck;
+        public static bool isSettings;
 
         public static void Main(string[] args)
         {
@@ -819,30 +820,6 @@ namespace clk
         #region Create methods for Boards, Lists, Cards, Comments, Descriptions, Checklists & points
 
         /// <summary>
-        /// This will try to store an object to the database, via the REST interface.
-        /// </summary>
-        /// <typeparam name="T">Generic object</typeparam>
-        /// <param name="obj">The object to send to the REST API</param>
-        /// <param name="restQuery">Which URL query to send the request for (board/createlist i.e)</param>
-        private static void pushToCloud<T>(T obj, string restQuery)
-        {
-            RestClient rest = new RestClient(restUrl);
-
-            try
-            {
-                string response = rest.post(obj, restQuery + user.id);
-                if (response.Equals("1"))
-                    Console.WriteLine("Saved to the cloud: " + obj.GetType().GetGenericArguments());
-                else
-                    write.error("Something went wrong. Are you logged in?");
-            }
-            catch (Exception e)
-            {
-                write.error(e.Message);
-            }
-        }
-
-        /// <summary>
         /// If --new-board parameter is incl. this is run.
         /// It will invoke the OverviewController (boards).
         /// The controller will handle the heavy work. 
@@ -1087,6 +1064,30 @@ namespace clk
 
 
         #region Cloud methods
+        
+        /// <summary>
+        /// This will try to store an object to the database, via the REST interface.
+        /// </summary>
+        /// <typeparam name="T">Generic object</typeparam>
+        /// <param name="obj">The object to send to the REST API</param>
+        /// <param name="restQuery">Which URL query to send the request for (board/createlist i.e)</param>
+        public static void pushToCloud<T>(T obj, string restQuery)
+        {
+            RestClient rest = new RestClient(restUrl);
+
+            try
+            {
+                string response = rest.post(obj, restQuery + user.id);
+                if (response.Equals("1"))
+                    Console.WriteLine("Saved to the cloud: " + obj.GetType().GetGenericArguments());
+                else
+                    write.error("Something went wrong. Are you logged in?");
+            }
+            catch (Exception e)
+            {
+                write.error(e.Message);
+            }
+        }
 
         /// <summary>
         /// If --new-profile is incl. this will run.
@@ -1151,7 +1152,7 @@ namespace clk
         /// <summary>
         /// Save a board to the cloud!
         /// </summary>
-        private static void saveBoard()
+        public static void saveBoard()
         {
             iniOvController();
 

@@ -122,6 +122,9 @@ namespace clk.Models
             if (keyPush == ConsoleKey.O)
                 return 5;
 
+            if (keyPush == ConsoleKey.S)
+                return 6;
+
             /*if (xPos >= xMaxPos && xPos > 0)
                 xPos--;
             if (yPos >= yMaxPos)
@@ -137,6 +140,7 @@ namespace clk.Models
         {
             yPos = prevYPos;
             xPos = prevXPos;
+            Program.isSettings = false;
             
             if (Program.isCard)
             {

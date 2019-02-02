@@ -308,12 +308,10 @@ namespace clk.Views
 
             // The lines available for the menu.
             string navigateInfo = "h/j/k/l  (or arrows)  to navigate.";
-            string selectInfo = "Space / Enter to select the item at he cursor.";
-            string checkPoint = "Space / Enter to check/un-check a checklist point";
-            string navFirstList = "r    first list.";
-            string navLastList  = "t    last list.";
-            string navToTop = "f    top selection.";
-            string navToBot = "g    bottom selection.";
+            string selectInfo = "Space/Enter to select the item at he cursor.";
+            string checkPoint = "Space/Enter to check/un-check a checklist point";
+            string navFirstList = "r/t    first/last list.";
+            string navToTop = "f/g    top/bottom selection.";
             string newList = "i    create a new list.";
             string newCard = "o    create a new card.";
             string newBoard = "i    create a new board.";
@@ -352,9 +350,7 @@ namespace clk.Views
                 writeMenu(delElem);
 
                 writeMenu(navFirstList);
-                writeMenu(navLastList);
                 writeMenu(navToTop);
-                writeMenu(navToBot);
             }
 
             // Write this if the card is set
@@ -364,6 +360,10 @@ namespace clk.Views
                 writeMenu(newCheck);
                 writeMenu(newPoint);
                 writeMenu(newCom);
+                
+                writeMenu(updElem);
+                writeMenu(delElem);
+                writeMenu(navToTop);
             }
 
             // Write this if the board is set
@@ -419,6 +419,31 @@ namespace clk.Views
             Console.WriteLine();
             Console.WriteLine("Create a new " + toCreate + ": ");
             return Console.ReadLine();
+        }
+
+        public void showSettings(int yPos, string defaultBoard, string autoLogin, string autoPush)
+        {
+            Console.WriteLine("Available settings:");
+
+            string first = "Default board set         : " + defaultBoard;
+            string second = "Auto login                : " + autoLogin;
+            string third = "Auto push changes to cloud: " + autoPush;
+            
+            string[] settings = {first, second, third};
+
+            int br = 0;
+            foreach (string s in settings)
+            {
+                int indent = 2;
+                if (yPos == br)
+                {
+                    indent = 0;
+                    EyeCandy.cursor();
+                }
+
+                Console.WriteLine(EyeCandy.indent(indent) + s);
+                br++;
+            }
         }
     }
 }

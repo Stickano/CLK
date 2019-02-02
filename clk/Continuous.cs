@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using clk.Controllers;
 using clk.Models;
 using clk.Resources;
@@ -28,6 +29,7 @@ namespace clk
         /// </summary>
         public void loopApp()
         {
+
             // Run this sucker in forever, and ever, and ever, and ever...
             while (true)
             {
@@ -39,18 +41,43 @@ namespace clk
                     Ascii.clkCard();
                 else if (isBoard)
                     Ascii.clkBoard();
-                else 
+                else if (!isCard && !isBoard && !isSettings)
                     Ascii.clkBoards();
-                /*else
-                    Ascii.clk();*/
+                else
+                    Ascii.clk();
 
 
                 // These will later be determined. How many steps a user can go right and down (X and Y positions)
                 int xMaxPos = 0;
                 int yMaxPos = 0;
+                
+                
+                // Show settings, if invoked with S
+                if (isSettings)
+                {
+                    // The default board value
+                    string defaultBoard = "not set";
+                    if (!settings.defaultBoard().Equals("")
+                        && ovController.getBoards().Any(x => x.id == settings.defaultBoard()))
+                        defaultBoard = ovController.getBoards().Find(x => x.id == settings.defaultBoard()).name;
+
+                    // Auto login value (email if set)
+                    string autoLogin = "not set";
+                    if (settings.autoLoginPossible())
+                        autoLogin = settings.getCredencials();
+
+                    // Auto push to cloud value
+                    string autoPush = "False";
+                    if (settings.autoPushToCloud())
+                        autoPush = "True";
+
+                    yMaxPos = 3; // TODO: should change this. There is 3 settings currently.
+                    write.showSettings(controls.yPos, defaultBoard, autoLogin, autoPush);
+                }
+                
 
                 // If the BOARD is not set, display ALL BOARDS
-                if (!isBoard)
+                if (!isBoard && !isSettings)
                 {
                     write.writeBoards(ovController.getBoards(), controls.yPos);
                     yMaxPos = ovController.getBoards().Count;
@@ -115,7 +142,6 @@ namespace clk
                 
                 // Display menu
                 write.writeMenu(isBoard, isCard);
-
                 
                 // Ask for user input
                 Console.WriteLine();
@@ -127,20 +153,35 @@ namespace clk
                 int response = controls.cursorAction(answer, xMaxPos, yMaxPos);
                 if (response == -1)
                     continue;
+                
+                // Show settings
+                if (response == 6)
+                {
+                    isSettings = true;
+                    continue;
+                }
 
                 // If we selected enter without the board is set,
                 // Select a board
-                if (!isBoard)
+                if (!isBoard && !isSettings)
                 {
                     // Create a new board
                     if (response == 4)
                     {
                         string newBoard = write.createValue("Board");
-                        if (!newBoard.Equals(""))
-                            ovController.createBoard(newBoard);
-
+                        if (newBoard.Equals(""))
+                            continue;
+                        
+                        ovController.createBoard(newBoard);
                         boardNum = ovController.getBoards().Count - 1;
                         iniOvController();
+
+                        if (settings.autoPushToCloud())
+                        {
+                            boardNum = ovController.getBoards().Count - 1;
+                            saveBoard();
+                        }
+
                         continue;
                     }
                     
@@ -149,8 +190,18 @@ namespace clk
                     {
                         Board b = ovController.getBoards()[controls.yPos];
                         string newName = write.updateValue(b.name);
-                        if (!newName.Equals(""))
-                            ovController.updateBoard(newName, b.id);
+                        if (newName.Equals(""))
+                            continue;
+                        
+                        ovController.updateBoard(newName, b.id);
+
+                        if (settings.autoPushToCloud())
+                        {
+                            boardNum = ovController.getBoards().IndexOf(b);
+                            saveBoard();
+                        }
+
+                        continue;
                     }
 
                     // Delete a board
@@ -161,9 +212,14 @@ namespace clk
                         if (!EyeCandy.confirm())
                             continue;
                         
+                        
+                        // TODO: A auto push to cloud is needed - The REST just need the method to delete a board first..
+                        
                         ovController.deleteBoard(ovController.getBoards()[controls.yPos].id);
                         if (controls.yPos != 0)
                             controls.yPos--;
+
+                        continue;
                     }
 
                     if (response == 1)
@@ -182,8 +238,17 @@ namespace clk
                     if (response == 2 && controls.yPos == 0)
                     {
                         string newName = write.updateValue(listName);
-                        if (!newName.Equals(""))
-                            liController.updateList(newName, listId);
+                        if (newName.Equals(""))
+                            continue;
+                        
+                        liController.updateList(newName, listId);
+
+                        if (settings.autoPushToCloud())
+                        {
+                            List l = liController.getLists().Find(x => x.id == listId);
+                            pushToCloud(l, "board/updatelist/");
+                        }
+
                         continue;
                     }
                     
@@ -194,6 +259,13 @@ namespace clk
                         Console.WriteLine("Are you sure you wanna delete this list: " + listName);
                         if (!EyeCandy.confirm())
                             continue;
+
+                        if (settings.autoPushToCloud())
+                        {
+                            List l = liController.getLists().Find(x => x.id == listId);
+                            l.active = false;
+                            pushToCloud(l, "board/updatelist/");
+                        }
                         
                         liController.deleteList(listId);
                         if (controls.xPos != 0)
@@ -215,28 +287,52 @@ namespace clk
                             continue;
                         
                         Card c = caController.getCards()[controls.yPos - 1];
+                        
+                        if(settings.autoPushToCloud())
+                            pushToCloud(c, "board/updatecard/");
+                        
                         caController.deleteCard(c.id);
+                        continue;
                     }
 
                     // If the user creates a new list
                     if (response == 4)
                     {
                         string list = write.createValue("List");
-                        if (!list.Equals(""))
-                            liController.createList(list);
-
+                        if (list.Equals(""))
+                            continue;
+                        
+                        liController.createList(list);
                         controls.xPos = liController.getLists().Count - 1;
+
+                        if (settings.autoPushToCloud())
+                        {
+                            List l = liController.getLists().Last();
+                            pushToCloud(l, "board/createlist/");
+                        }
+                        
                         continue;
                     }
 
                     // Create a new card
                     if (response == 5)
                     {
+                        if (!isList)
+                            continue;
+                        
                         string card = write.createValue("Card");
-                        if (!card.Equals(""))
-                            caController.createCard(card);
-
+                        if (card.Equals(""))
+                            continue;
+                        
+                        caController.createCard(card);
                         controls.yPos = caController.getCards().Count;
+
+                        if (settings.autoPushToCloud())
+                        {
+                            Card c = caController.getCards().Last();
+                            pushToCloud(c, "board/createcard/");
+                        }
+                        
                         continue;
                     }
 
@@ -268,14 +364,30 @@ namespace clk
 
                     // Update a description on a card
                     if (response == 2 && controls.yPos == 1)
+                    {
                         caController.createDescription(write.createValue("Description"), cardId);
+
+                        if (settings.autoPushToCloud())
+                        {
+                            Card c = caController.getCards().Find(x => x.id == cardId);
+                            pushToCloud(c, "board/updatecard/");
+                        }
+                    }
 
                     // Update the name of a card
                     if (response == 2 && controls.yPos == 0)
                     {
                         string newName = write.updateValue(cardName);
-                        if (!newName.Equals(""))
-                            caController.updateCard(newName, cardId);
+                        if (newName.Equals(""))
+                            continue;
+                        
+                        caController.updateCard(newName, cardId);
+
+                        if (settings.autoPushToCloud())
+                        {
+                            Card c = caController.getCards().Find(x => x.id == cardId);
+                            pushToCloud(c, "board/updatecard/");
+                        }
                     }
                     
                     // If user is updating an element
@@ -290,16 +402,32 @@ namespace clk
                     if (response == 4)
                     {
                         string ck = write.createValue("Checklist");
-                        if (!ck.Equals(""))
-                            caController.createChecklist(ck, cardId);
+                        if (ck.Equals(""))
+                            continue;
+                        
+                        caController.createChecklist(ck, cardId);
+
+                        if (settings.autoPushToCloud())
+                        {
+                            Checklist c = caController.getChecklists(cardId).Last();
+                            pushToCloud(c, "board/createchecklist/");
+                        }
                     }
 
                     // If the user is creating a new checklist point
                     if (response == 5)
                     {
                         string p = write.createValue("Point");
-                        if (!p.Equals(""))
-                            caController.createChecklistPoint(p, checkId);
+                        if (p.Equals(""))
+                            continue;
+                        
+                        caController.createChecklistPoint(p, checkId);
+
+                        if (settings.autoPushToCloud())
+                        {
+                            ChecklistPoint cp = caController.getChecklistPoints().Last();
+                            pushToCloud(cp, "board/createpoint/");
+                        }
                     }
                 }
             }
@@ -318,24 +446,48 @@ namespace clk
             {
                 Checklist c = (Checklist) element;
                 Console.WriteLine("Are you sure you wanna delete checklist: " + c.name);
-                if (EyeCandy.confirm())
-                    caController.deleteChecklist(c.id);
+                if (!EyeCandy.confirm())
+                    return;
+
+                if (settings.autoPushToCloud())
+                {
+                    c.active = false;
+                    pushToCloud(c, "board/updatechecklist/");
+                }
+                
+                caController.deleteChecklist(c.id);
             }
 
             if (element is ChecklistPoint)
             {
                 ChecklistPoint point = (ChecklistPoint) element;
                 Console.WriteLine("Are you sure you wanna delete point: "+point.name);
-                if (EyeCandy.confirm())
-                    caController.deletePoint(point.id);
+                if (!EyeCandy.confirm())
+                    return;
+
+                if (settings.autoPushToCloud())
+                {
+                    point.active = false;
+                    pushToCloud(point, "board/updatepoint/");
+                }
+                
+                caController.deletePoint(point.id);
             }
 
             if (element is Comment)
             {
                 Comment comment = (Comment) element;
                 Console.WriteLine("Are you sure you wanna delete comment created on: " + comment.created);
-                if (EyeCandy.confirm())
-                    caController.deleteComment(comment.id);
+                if (!EyeCandy.confirm())
+                    return;
+
+                if (settings.autoPushToCloud())
+                {
+                    comment.active = false;
+                    pushToCloud(comment, "board/updatecomment/");
+                }
+                
+                caController.deleteComment(comment.id);
             }  
         }
 
@@ -353,6 +505,12 @@ namespace clk
                     return;
                 
                 caController.updateChecklist(update, c.id);
+
+                if (settings.autoPushToCloud())
+                {
+                    Checklist ch = caController.getChecklists(cardId).Find(x => x.id == c.id);
+                    pushToCloud(ch, "board/updatechecklist/");
+                }
             }
 
             if (element is ChecklistPoint)
@@ -363,6 +521,12 @@ namespace clk
                     return;
                 
                 caController.updateChecklistPoint(update, point.id);
+
+                if (settings.autoPushToCloud())
+                {
+                    ChecklistPoint p = caController.getChecklistPoints().Find(x => x.id == point.id);
+                    pushToCloud(p, "board/updatepoint/");
+                }
             }
 
             if (element is Comment)
@@ -373,6 +537,12 @@ namespace clk
                     return;
                 
                 caController.updateComment(update, comment.id);
+
+                if (settings.autoPushToCloud())
+                {
+                    Comment c = caController.getComments(cardId).Find(x => x.id == comment.id);
+                    pushToCloud(c, "board/updatecomment/");
+                }
             }   
         }
         
