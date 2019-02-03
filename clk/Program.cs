@@ -13,8 +13,8 @@ namespace clk
 {
     internal class Program
     {
-        //private static string restUrl = "http://localhost:50066/Service1.svc/";
-        public static string restUrl = "http://easj-final.azurewebsites.net/Service1.svc/";
+        public static string restUrl = "http://localhost:50066/Service1.svc/";
+        //public static string restUrl = "http://easj-final.azurewebsites.net/Service1.svc/";
 
         public static Profile user = new Profile();
         public static SettingsController settings;
@@ -1075,9 +1075,10 @@ namespace clk
         {
             RestClient rest = new RestClient(restUrl);
             
-            
             // Check if board exists in the cloud, otherwise save it first.
             Board b = JsonConvert.DeserializeObject<Board>(rest.post(user, "board/get/" + boardId));
+
+            //Console.WriteLine(b.id);
             if (b.id.Equals(""))
             {
                 saveBoard();
@@ -1087,11 +1088,16 @@ namespace clk
             try
             {
                 string response = rest.post(obj, restQuery + user.id);
-                //Console.WriteLine(response);
+                Console.WriteLine(response);
+                //Console.WriteLine(restQuery + user.id);
                 if (response.Equals("1"))
                     Console.WriteLine("Saved to the cloud: " + obj.GetType().GetGenericArguments());
                 else
-                    write.error("Something went wrong. Are you logged in?");
+                {
+                    saveBoard();
+                    Console.WriteLine("A problem was encountered. The board has been saved again to the cloud. Make sure the new element is available.");
+                    //write.error("Something went wrong. Are you logged in?");
+                }
             }
             catch (Exception e)
             {
@@ -1155,7 +1161,7 @@ namespace clk
             if (user.id == null)
                 write.error("Username or password was incorrect.");
 
-            Console.WriteLine(user.id);
+            //Console.WriteLine(user.id);
             Console.WriteLine("Successfully logged into: " + user.email);
         }
 

@@ -33,12 +33,8 @@ namespace clk
             // Run this sucker in forever, and ever, and ever, and ever...
             while (true)
             {
-                
-                Console.Clear();
 
-                Console.WriteLine(user.email);
-                Console.WriteLine(user.password);
-                Console.WriteLine(user.id);
+                Console.Clear();
                 
                 // Write top logo
                 if (isCard)
