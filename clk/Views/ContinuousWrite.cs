@@ -310,8 +310,8 @@ namespace clk.Views
             string navigateInfo = "h/j/k/l  (or arrows)  to navigate.";
             string selectInfo = "Space/Enter to select the item at he cursor.";
             string checkPoint = "Space/Enter to check/un-check a checklist point";
-            string navFirstList = "r/t    first/last list.";
-            string navToTop = "f/g    top/bottom selection.";
+            string navFirstList = "r/t  first/last list.";
+            string navToTop = "f/g  top/bottom selection.";
             string newList = "i    create a new list.";
             string newCard = "o    create a new card.";
             string newBoard = "i    create a new board.";
