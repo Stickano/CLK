@@ -3,6 +3,7 @@ using System.Linq;
 using clk.Controllers;
 using clk.Resources;
 
+
 namespace clk.Models
 {
     public class TrelloBoard
