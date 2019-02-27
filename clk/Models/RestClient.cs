@@ -33,11 +33,15 @@ namespace clk.Models
         /// </summary>
         /// <param name="queryString">The URL query</param>
         /// <returns>String of content from the server</returns>
-        public string get(string queryString)
+        public string get(string queryString = "")
         {
+            string queryUrl = url;
+            if (!queryString.Equals(""))
+                queryUrl += queryString;
+            
             using (HttpClient client = new HttpClient())
             {
-                HttpResponseMessage result = client.GetAsync(url + queryString).Result;
+                HttpResponseMessage result = client.GetAsync(queryUrl).Result;
                 if (result.IsSuccessStatusCode)
                 {
                     HttpContent response = result.Content;

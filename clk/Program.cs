@@ -180,6 +180,9 @@ namespace clk
 
                 if (arg.key.Equals("--settings"))
                     viewSettings(arg.value);
+                
+                if (arg.key.Equals("--trello"))
+                    getFromTrello(arg.value);
 
 
                 /*if (arg.key.Equals(""))
@@ -227,6 +230,23 @@ namespace clk
             }
 
             return args;
+        }
+
+        private static void getFromTrello(List<string> args)
+        {
+            foreach (string boardUrl in args)
+            {
+                RestClient rc = new RestClient(boardUrl);
+                string response = rc.get();
+                
+                TrelloBoard trello = new TrelloBoard(response);
+                
+                if (trello.name.Equals(""))
+                    Console.WriteLine("Empty board name value. Something must have gone wrong with URL: " + boardUrl);
+                else
+                    Console.WriteLine("Created board from trello: " + trello.name);
+            }
+
         }
 
         /// <summary>
