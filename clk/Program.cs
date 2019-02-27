@@ -215,7 +215,8 @@ namespace clk
                 login();
             }
 
-            if (!settings.defaultBoard().Equals(""))
+            //TODO: This doesn't really work as intended. It shits on a lot of previous args and just rule it all as a board set.
+            /*if (!settings.defaultBoard().Equals(""))
             {
                 iniOvController();
                 int index = ovController.getBoards()
@@ -227,7 +228,7 @@ namespace clk
                 ls.Add("-b");
                 ls.Add(index.ToString());
                 args = ls.ToArray();
-            }
+            }*/
 
             return args;
         }
@@ -238,6 +239,8 @@ namespace clk
             {
                 RestClient rc = new RestClient(boardUrl);
                 string response = rc.get();
+
+                //Console.WriteLine(response);
                 
                 TrelloBoard trello = new TrelloBoard(response);
                 

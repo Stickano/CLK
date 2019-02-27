@@ -8,9 +8,9 @@ namespace clk.Models
 {
     public class TrelloBoard
     {
-        private string id = "";
-        public string name = "";
-        private string created = "";
+        public string id { get; set; }
+        public string name { get; set; }
+        public string created { get; set; }
 
         private string restResponse;
         private OverviewController oc;
