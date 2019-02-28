@@ -24,6 +24,10 @@ namespace clk.Models
             oc = new OverviewController();
             cc = new CardController();
 
+            id = "";
+            name = "";
+            created = "";
+
             timestamp = Time.timestamp();
             
             this.restResponse = restResponse;

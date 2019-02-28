@@ -240,7 +240,7 @@ namespace clk
                 RestClient rc = new RestClient(boardUrl);
                 string response = rc.get();
 
-                //Console.WriteLine(response);
+                Console.WriteLine(response);
                 
                 TrelloBoard trello = new TrelloBoard(response);
                 

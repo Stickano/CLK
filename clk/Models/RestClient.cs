@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using clk.Resources;
 using Newtonsoft.Json;
 
 namespace clk.Models
@@ -35,20 +36,69 @@ namespace clk.Models
         /// <returns>String of content from the server</returns>
         public string get(string queryString = "")
         {
-            string queryUrl = url;
-            if (!queryString.Equals(""))
-                queryUrl += queryString;
-            
-            using (HttpClient client = new HttpClient())
+
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            try
             {
-                HttpResponseMessage result = client.GetAsync(queryUrl).Result;
-                if (result.IsSuccessStatusCode)
+                WebResponse response = request.GetResponse();
+                using (Stream responseStream = response.GetResponseStream())
                 {
-                    HttpContent response = result.Content;
-                    return response.ReadAsStringAsync().Result;
+                    StreamReader reader = new StreamReader(responseStream, System.Text.Encoding.UTF8);
+                    return reader.ReadToEnd();
                 }
             }
-            return"";
+            catch (WebException ex)
+            {
+                WebResponse errorResponse = ex.Response;
+                using (Stream responseStream = errorResponse.GetResponseStream())
+                {
+                    StreamReader reader = new StreamReader(responseStream, System.Text.Encoding.GetEncoding("utf-8"));
+                    String errorText = reader.ReadToEnd();
+                    //return errorText;
+                }
+                throw;
+            }
+
+
+            //string html = string.Empty;
+            //string url = this.url + queryString;
+
+            //HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            //request.AutomaticDecompression = DecompressionMethods.GZip;
+
+            //using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            //using (Stream stream = response.GetResponseStream())
+            //using (StreamReader reader = new StreamReader(stream))
+            //{
+            //    html = reader.ReadToEnd();
+            //}
+            //return html;
+
+            //HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url+queryString);
+            //request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+
+            //using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            //using (Stream stream = response.GetResponseStream())
+            //using (StreamReader reader = new StreamReader(stream))
+            //{
+            //    return reader.ReadToEnd();
+            //}
+
+
+            //string queryUrl = url;
+            //if (!queryString.Equals(""))
+            //    queryUrl += queryString;
+
+            //using (HttpClient client = new HttpClient())
+            //{
+            //    HttpResponseMessage result = client.GetAsync(queryUrl).Result;
+            //    if (result.IsSuccessStatusCode)
+            //    {
+            //        HttpContent response = result.Content;
+            //        return response.ReadAsStringAsync().Result;
+            //    }
+            //}
+            //return"";
         }
 
         /// <summary>
