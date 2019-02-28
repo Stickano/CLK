@@ -192,12 +192,18 @@ namespace clk
             // Write the output for the selection
             // TODO: Casts exceptions on first creations of elements (no elements in lists).
             Console.WriteLine();
-            if (argController.isCard && isCard)
-                write.card(caController.cards.Find(x => x.id == cardId), caController);
-            else if (argController.isList && isList)
-                write.allCards(caController.getCards());
-            else if (argController.isBoard && isBoard)
-                write.allLists(liController.getLists());
+            try
+            {
+                if (argController.isCard && isCard)
+                    write.card(caController.cards.Find(x => x.id == cardId), caController);
+                else if (argController.isList && isList)
+                    write.allCards(caController.getCards());
+                else if (argController.isBoard && isBoard)
+                    write.allLists(liController.getLists());
+            }
+            catch (Exception e) {
+                //Console.WriteLine(e);
+            }
 
             write.commentDestination();
         }
@@ -1104,9 +1110,9 @@ namespace clk
             
             // Check if board exists in the cloud, otherwise save it first.
             Board b = JsonConvert.DeserializeObject<Board>(rest.post(user, "board/get/" + boardId));
-
+            //Console.WriteLine(b.ToString());
             //Console.WriteLine(b.id);
-            if (b.id.Equals(""))
+            if (b.id == null || b.id.Equals(""))
             {
                 saveBoard();
                 return;
