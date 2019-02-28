@@ -12,6 +12,7 @@ namespace clk.Controllers
         
         public SettingsController()
         {
+            Json.isFiles();
             json = new Json("settings.json");
             if (new FileInfo("Json/settings.json").Length == 0)
                 defineFile();

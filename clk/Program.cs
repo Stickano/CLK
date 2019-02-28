@@ -247,7 +247,7 @@ namespace clk
                 if (trello.name.Equals(""))
                     Console.WriteLine("Empty board name value. Something must have gone wrong with URL: " + boardUrl);
                 else
-                    Console.WriteLine("Created board from trello: " + trello.name);
+                    Console.WriteLine("Created board from Trello: " + trello.name);
             }
 
         }
@@ -312,7 +312,7 @@ namespace clk
                     return;
 
                 ovController.deleteBoard(b.id);
-                Console.WriteLine("Deleted list: " + name);
+                Console.WriteLine("Deleted board: " + name);
             }
         }
 
@@ -869,11 +869,15 @@ namespace clk
                 }
 
                 // Set a new boardNum val for the latest element
+                //Console.WriteLine(ovController.getBoards().Count);
                 boardNum = ovController.getBoards().Count - 1;
+                //Console.WriteLine(boardNum);
+                
             }
 
             argController.isBoard = true;
             iniOvController();
+            iniLiController(boardId);
         }
 
         /// <summary>
